@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Flyweight Table</title>
+<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+
+<script>
+
+function setupFlyTable(element) {
+	
+	var table = {};
+	table.wrapper = element;
+	table.container = $("<div>");
+	table.recycle = [];
+	table.sliceStart = 0;
+	table.sliceEnd = 0;
+	
+	table.wrapper.append(table.container);
+	
+	/* Public Overrides */
+	
+	table.getComponent = function(index, recycle) {
+		if(!recycle) {
+			recycle = $("<s>no renderer</s>");
+		}
+		
+		return recycle;
+	}
+	
+	table.getItemHeight = function(index) {
+		return 16; // arbitrary value
+	}
+	
+	table.getTotalHeight = function() {
+		return 160; // arbitrary value
+	}
+
+	table.pixelToIndex = function(y) {
+		return ~~(y / this.getItemHeight(0));
+	}
+
+	/* Internal Functions */
+	
+	function recycleOffscreenNodes() {
+	}
+
+	function grabNode() {
+		return false;
+	}
+	
+	/* Public Methods */
+	
+	table.render = function() {
+		var t = this.container;
+		t.empty();
+		
+		// slow:
+		var height = this.getTotalHeight();
+		var index = 0;
+		for(var y = 0; y < height;) {
+			var h = this.getItemHeight(index);
+			var domNode = this.getComponent(index, grabNode());
+			domNode.css({
+				position: "absolute",
+				left: "0",
+				top: y
+			});
+			t.append(domNode);
+			index++;
+			y += h;
+		}
+		
+		table.container.css({
+			position: "relative",
+			height: height
+		});
+	}
+	
+	table.simpleArray = function(data, templateSelector, renderFunc) {
+		var tmpl = $(templateSelector);
+		var rowHeight = tmpl.height();
+		
+		this.getComponent = function(index, node) {
+			if(!node) {
+				node = tmpl.clone();
+			}
+		
+			var dataItem = data[index];
+			renderFunc(dataItem, node, index);
+			
+			return node;
+		}
+		
+		this.getItemHeight = function(index) {
+			return rowHeight;
+		}
+
+		this.getTotalHeight = function() {
+			return rowHeight * data.length;
+		}
+	}
+	
+	/* End */
+	
+	return table;
+}
+</script>
+
+<script>
+
+var data = [];
+var strs = ["alphabet", "beatitudes", "casablanca", "danish sockets", "eccentric ecindnas", "flapjacks", "gardener"];
+
+for(var i = 0; i < 300; i++) {
+	var item = {};
+	item.a = i;
+	var chaos = ((i*23) >> 3) ^ i;
+	item.b = chaos;
+	item.c = strs[chaos % strs.length];
+	data.push(item);
+}
+
+$(function() {
+	var table = setupFlyTable($("#contain"));
+	
+	table.simpleArray(data, ".tmpl .item", function(data, node) {
+		node.find(".a").text(data.a);
+		node.find(".b").text(data.b);
+		node.find(".c").text(data.c);
+	});
+	
+	table.render();
+})
+
+</script>
+
+<style>
+.item {
+	display: block;
+	background: #888;
+	border-radius: 5px;
+	height: 30px;
+}
+</style>
+</head>
+<body>
+
+<div id="contain" style="border: thick red solid"></div>
+
+<hr />
+
+<div class="tmpl">
+<div class="item">
+<b class="a"></b> <span class="b"></span> <i class="c"></i>
+</div>
+</div>
+
+</body>
+</html>
+
