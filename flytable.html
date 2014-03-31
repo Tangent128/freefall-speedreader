@@ -9,15 +9,18 @@
 function setupFlyTable(element) {
 	
 	var table = {};
-	table.wrapper = element;
-	table.container = $("<div>");
+	table.container = element;
 	table.recycle = [];
+	table.inUse = [];
 	table.sliceStart = 0;
 	table.sliceEnd = 0;
-	
-	table.wrapper.append(table.container);
+
+	// extra space on either side to render
+	var SCROLL_BUFFER = 10;
 	
 	/* Public Overrides */
+	
+	table.recalculate = function() {}
 	
 	table.getComponent = function(index, recycle) {
 		if(!recycle) {
@@ -25,6 +28,10 @@ function setupFlyTable(element) {
 		}
 		
 		return recycle;
+	}
+	
+	table.getItemTop = function(index) {
+		return 16*index; // arbitrary value
 	}
 	
 	table.getItemHeight = function(index) {
@@ -43,26 +50,58 @@ function setupFlyTable(element) {
 	
 	function recycleOffscreenNodes() {
 	}
+	function recycleAllNodes() {
+		var inUse = table.inUse;
+		var recycle = table.recycle;
+		
+		for(var i = 0; i < inUse.length; i++) {
+			recycle.push(inUse[i]);
+		}
+		
+		table.inUse = [];
+	}
 
 	function grabNode() {
+		if(table.recycle.length > 0) {
+			return table.recycle.pop();
+		}
 		return false;
 	}
 	
-	/* Public Methods */
+	// util, limit an event handler to only run every 20ms
+	function burnout(func) {
+		var burnedOut = false;
+		return function(evt) {
+			if(burnedOut) {
+				return;
+			}
+			burnedOut = true;
+			window.setTimeout(function() {burnedOut = false;}, 20);
+			return func.apply(this, evt);
+		}
+	}
 	
-	table.render = function() {
-		var t = this.container;
+	function renderSlice(startY, endY) {
+		var t = table.container;
 		t.empty();
 		
-		// slow:
-		var height = this.getTotalHeight();
-		var index = 0;
-		for(var y = 0; y < height;) {
-			var h = this.getItemHeight(index);
-			var domNode = this.getComponent(index, grabNode());
+		table.recalculate();
+		recycleAllNodes();
+		
+		// pad region
+		var height = table.getTotalHeight();
+		startY = Math.max(0, startY - SCROLL_BUFFER);
+		endY = Math.min(endY + SCROLL_BUFFER, height)
+		
+		var index = table.pixelToIndex(startY);
+		
+		for(var y = table.getItemTop(index); y < endY;) {
+			var h = table.getItemHeight(index);
+			var domNode = table.getComponent(index, grabNode());
 			domNode.css({
 				position: "absolute",
 				left: "0",
+				right: "0",
 				top: y
 			});
 			t.append(domNode);
@@ -76,9 +115,24 @@ function setupFlyTable(element) {
 		});
 	}
 	
+	/* Public Methods */
+	
+	table.render = function() {
+		var screenY = $(window).scrollTop();
+		var tableY = this.container.offset().top;
+		var delta = screenY - tableY;
+		renderSlice(delta, delta + $(window).height());
+	}
+	
+	// utility for displaying fixed datasets of uniform row height
 	table.simpleArray = function(data, templateSelector, renderFunc) {
-		var tmpl = $(templateSelector);
-		var rowHeight = tmpl.height();
+		var tmpl;
+		var rowHeight;
+		
+		this.recalculate = function() {
+			tmpl = $(templateSelector);
+			rowHeight =tmpl.height();
+		}
 		
 		this.getComponent = function(index, node) {
 			if(!node) {
@@ -89,6 +143,10 @@ function setupFlyTable(element) {
 			renderFunc(dataItem, node, index);
 			
 			return node;
+		}
+		
+		this.getItemTop = function(index) {
+			return rowHeight*index;
 		}
 		
 		this.getItemHeight = function(index) {
@@ -111,7 +169,7 @@ function setupFlyTable(element) {
 var data = [];
 var strs = ["alphabet", "beatitudes", "casablanca", "danish sockets", "eccentric ecindnas", "flapjacks", "gardener"];
 
-for(var i = 0; i < 300; i++) {
+for(var i = 0; i < 3000; i++) {
 	var item = {};
 	item.a = i;
 	var chaos = ((i*23) >> 3) ^ i;
@@ -129,12 +187,31 @@ $(function() {
 		node.find(".c").text(data.c);
 	});
 	
+	//setInterval(function() {table.render()}, 500)
+
+	$(document).on("scroll", function() {
+		table.render();
+	});
+	
 	table.render();
+
+	$("#scroller").add(document).on("scroll", function() {
+		$("#contain .item").each(function() {
+			var item = $(this);
+			var o = item.offset();
+			item.find(".c").text(o.left + ", " + o.top);
+		});
+	});
+
 })
 
 </script>
 
 <style>
+#scroller {
+	height: 250px;
+	overflow-y: scroll;
+}
 .item {
 	display: block;
 	background: #888;
@@ -146,6 +223,7 @@ $(function() {
 <body>
 
 <div id="contain" style="border: thick red solid"></div>
+<div id="scroller"></div>
 
 <hr />
 
