@@ -8,7 +8,7 @@ function setupFlyTable(element) {
 	table.sliceEnd = 0;
 
 	// extra space on either side to render
-	var SCROLL_BUFFER = 10;
+	table.scrollPadding = 10;
 	
 	/* Public Overrides */
 	
@@ -23,7 +23,7 @@ function setupFlyTable(element) {
 	}
 	
 	table.getItemTop = function(index) {
-		return 16*index; // arbitrary value
+		return this.getItemHeight(0)*index; // arbitrary value
 	}
 	
 	table.getItemHeight = function(index) {
@@ -82,8 +82,8 @@ function setupFlyTable(element) {
 		
 		// pad region
 		var height = table.getTotalHeight();
-		startY = Math.max(0, startY - SCROLL_BUFFER);
-		endY = Math.min(endY + SCROLL_BUFFER, height)
+		startY = Math.max(0, startY - table.scrollPadding);
+		endY = Math.min(endY + table.scrollPadding, height)
 		
 		var index = table.pixelToIndex(startY);
 		
@@ -117,14 +117,15 @@ function setupFlyTable(element) {
 		renderSlice(delta, delta + $(window).height());
 	}
 	
-	// utility for displaying fixed datasets of uniform row height
-	table.simpleArray = function(data, templateSelector, renderFunc) {
+	// utility for displaying datasets of uniform row height
+	// renderFunc(index of item, jQuery-wrapped node to render to)
+	table.simpleDataset = function(getDataCount, templateSelector, renderFunc) {
 		var tmpl;
 		var rowHeight;
 		
 		this.recalculate = function() {
 			tmpl = $(templateSelector);
-			rowHeight =tmpl.height();
+			rowHeight = tmpl.height();
 		}
 		
 		this.getComponent = function(index, node) {
@@ -132,8 +133,7 @@ function setupFlyTable(element) {
 				node = tmpl.clone();
 			}
 		
-			var dataItem = data[index];
-			renderFunc(dataItem, node, index);
+			renderFunc(index, node);
 			
 			return node;
 		}
@@ -147,8 +147,20 @@ function setupFlyTable(element) {
 		}
 
 		this.getTotalHeight = function() {
-			return rowHeight * data.length;
+			return rowHeight * getDataCount();
 		}
+	}
+	
+	// utility for displaying array-based datasets
+	// renderFunc(item value, jQuery-wrapped node to render to, index of item)
+	table.simpleArray = function(array, templateSelector, renderFunc) {
+		this.simpleDataset(
+			function() {return array.length;},
+			templateSelector,
+			function(index, node) {
+				renderFunc(array[index], node, index)
+			}
+		)
 	}
 	
 	/* End */

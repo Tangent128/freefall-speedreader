@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Flyweight Table</title>
+<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+
+<script src="flytable.js"></script>
+
+<script>
+
+$(function() {
+
+//http://freefall.purrsia.com/ff100/fv00001.gif
+//http://freefall.purrsia.com/ff400/fv00376.gif
+//http://freefall.purrsia.com/ff1300/fc01253.png
+	var numComics = 2481;
+	var firstColor = 1253;
+	var height = 340;
+
+	var table = setupFlyTable($("#contain"));
+	
+	function fixedLen(num,len){return(1e15+num+"").slice(-len);}
+	
+	function getUrl(num) {
+		var bin = ((~~((num - 1) / 100)) * 100) + 100;
+		//bin = fixedLen(bin, 3);
+		num = fixedLen(num, 5);
+		
+		if(num >= firstColor) {
+			return "http://freefall.purrsia.com/ff"+bin+"/fc"+num+".png";
+		} else {
+			return "http://freefall.purrsia.com/ff"+bin+"/fv"+num+".gif";
+		}
+	}
+	
+	table.scrollPadding = 400;
+	table.simpleDataset(
+		function() {return numComics;},
+		".tmpl .comic",
+		function(index, node) {
+			// 1-index comics
+			index = index + 1;
+			var url = getUrl(index);
+			//node.find(".dbg").text(url);
+			node.find(".num").text(index);
+			node.find("img").attr("src", url);
+		}
+	);
+
+	$(document).on("scroll", function() {
+		table.render();
+	});
+	
+	table.render();
+
+})
+
+</script>
+
+<style>
+.tmpl {
+	display: none;
+}
+.comic {
+	height: 350px;
+	width: 1100px;
+}
+.comic .bg {
+	display: block;
+	background: #eee;
+	border-radius: 15px;
+	height: 340px;
+}
+.comic .num {
+	position: absolute;
+	top: 0; right: 0;
+	color: black;
+	font-weight: bold;
+	background: white;
+	padding: 3px;
+	z-index: 1;
+}
+.comic img {
+	position: absolute;
+	top: 0; left: 0;
+	z-index: 0;
+}
+</style>
+</head>
+<body>
+
+<div id="contain"></div>
+
+<hr />
+
+<div class="tmpl">
+<div class="comic">
+<div class="bg">
+<span class="dbg"></span>
+<span class="num"></span>
+<img />
+</div>
+</div>
+</div>
+
+</body>
+</html>
+
