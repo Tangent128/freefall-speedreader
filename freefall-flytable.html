@@ -2,8 +2,7 @@
 <html>
 <head>
 <title>Flyweight Table</title>
-<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
-
+<script src="jquery-1.11.0.min.js"></script>
 <script src="flytable.js"></script>
 
 <script>
@@ -26,7 +25,9 @@ $(function() {
 		//bin = fixedLen(bin, 3);
 		num = fixedLen(num, 5);
 		
-		if(num >= firstColor) {
+		if(num == 1401) {
+			return "http://freefall.purrsia.com/ff1500/fc01401.jpg";
+		} else if(num >= firstColor) {
 			return "http://freefall.purrsia.com/ff"+bin+"/fc"+num+".png";
 		} else {
 			return "http://freefall.purrsia.com/ff"+bin+"/fv"+num+".gif";
@@ -67,7 +68,7 @@ $(function() {
 }
 .comic .bg {
 	display: block;
-	background: #eee;
+	/*background: #eee;*/
 	border-radius: 15px;
 	height: 340px;
 }
