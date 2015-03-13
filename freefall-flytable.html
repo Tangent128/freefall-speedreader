@@ -7,18 +7,23 @@
 
 <script>
 
-$(function() {
-
 //http://freefall.purrsia.com/ff100/fv00001.gif
 //http://freefall.purrsia.com/ff400/fv00376.gif
 //http://freefall.purrsia.com/ff1300/fc01253.png
-	var numComics = 2481;
-	var firstColor = 1253;
-	var height = 340;
+
+$(function() {
 
 	var table = setupFlyTable($("#contain"));
+	var tmpl = $(".tmpl .comic");
+
+	function fixedLen(num,len){
+		return("0000000000000000"+num).slice(-len);
+	};
 	
-	function fixedLen(num,len){return(1e15+num+"").slice(-len);}
+	// comic dimension data
+	var numComics = 2650;
+	var firstColor = 1253;
+	var height = 340;
 	
 	function getUrl(num) {
 		var bin = ((~~((num - 1) / 100)) * 100) + 100;
@@ -26,28 +31,45 @@ $(function() {
 		num = fixedLen(num, 5);
 		
 		if(num == 1401) {
+			// special case
 			return "http://freefall.purrsia.com/ff1500/fc01401.jpg";
 		} else if(num >= firstColor) {
 			return "http://freefall.purrsia.com/ff"+bin+"/fc"+num+".png";
 		} else {
 			return "http://freefall.purrsia.com/ff"+bin+"/fv"+num+".gif";
 		}
-	}
+	};
 	
+	
+	// flytable config
 	table.scrollPadding = 400;
-	table.simpleDataset(
-		function() {return numComics;},
-		".tmpl .comic",
-		function(index, node) {
-			// 1-index comics
-			index = index + 1;
-			var url = getUrl(index);
-			//node.find(".dbg").text(url);
-			node.find(".num").text(index);
-			node.find("img").attr("src", url);
-		}
-	);
 
+	table.getTotalHeight = function() {
+		return numComics * height;
+	};
+	
+	table.getItemTop = function(index) {
+		return height*index;
+	};
+	table.getItemHeight = function(index) {
+		return height;
+	};
+	
+	table.getComponent = function(index, node) {
+		if(!node) {
+			node = tmpl.clone();
+		}
+		// 1-index comics
+		index = index + 1;
+		var url = getUrl(index);
+		//node.find(".dbg").text(url);
+		node.find(".num").text(index);
+		node.find("img").attr("src", url);
+		
+		return node;
+	};
+
+	// event hookup
 	$(document).on("scroll", function() {
 		table.render();
 	});
@@ -68,7 +90,7 @@ $(function() {
 }
 .comic .bg {
 	display: block;
-	/*background: #eee;*/
+	background: #eee;
 	border-radius: 15px;
 	height: 340px;
 }

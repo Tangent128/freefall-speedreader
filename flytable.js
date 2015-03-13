@@ -87,6 +87,11 @@ function setupFlyTable(element) {
 		
 		var index = table.pixelToIndex(startY);
 		
+		table.container.css({
+			position: "relative",
+			height: height
+		});
+
 		for(var y = table.getItemTop(index); y < endY;) {
 			var h = table.getItemHeight(index);
 			var domNode = table.getComponent(index, grabNode());
@@ -101,10 +106,6 @@ function setupFlyTable(element) {
 			y += h;
 		}
 		
-		table.container.css({
-			position: "relative",
-			height: height
-		});
 		//console.log(height + "pixels high")
 	}
 	
