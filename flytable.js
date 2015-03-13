@@ -41,6 +41,29 @@ function setupFlyTable(element) {
 	/* Internal Functions */
 	
 	function recycleOffscreenNodes(table, startY, endY) {
+		var container = table.container;
+		var inUse = table.inUse;
+		var recycle = table.recycle;
+		var stillInUse = [];
+		
+		var firstVisible = table.pixelToIndex(startY);
+		var lastVisible = table.pixelToIndex(endY);
+		
+		for(var i = 0; i < inUse.length; i++) {
+			var element = inUse[i];
+			var index = element.data("flytable-index");
+			
+			if(index < firstVisible || index > lastVisible) {
+				recycle.push(element);
+				element.remove();
+			} else {
+				stillInUse.push(element);
+			}
+		}
+		
+		table.inUse = stillInUse;
+		table.sliceStart = Math.max(firstVisible, table.sliceStart);
+		table.sliceEnd = Math.min(table.sliceEnd, lastVisible);
 	}
 	function recycleAllNodes(table) {
 		var inUse = table.inUse;
@@ -49,6 +72,7 @@ function setupFlyTable(element) {
 		for(var i = 0; i < inUse.length; i++) {
 			recycle.push(inUse[i]);
 		}
+		table.container.empty();
 		
 		table.inUse = [];
 		table.sliceStart = 1/0;
@@ -80,7 +104,7 @@ function setupFlyTable(element) {
 		}
 	}
 	
-	function renderSlice(startY, endY) {
+	function renderSlice(table, startY, endY) {
 		// prepare table element
 		var container = table.container;
 		table.recalculate();
@@ -92,28 +116,34 @@ function setupFlyTable(element) {
 		});
 		
 		// pad region
-		startY = Math.max(0, startY - table.scrollPadding);
-		endY = Math.min(endY + table.scrollPadding, height)
+		var startY = Math.max(0, startY - table.scrollPadding);
+		var endY = Math.min(endY + table.scrollPadding, height)
 		
 		// clear offscreen nodes
-		recycleAllNodes(table);
-		container.empty();
+		recycleOffscreenNodes(table, startY, endY);
 
-		// loop through onscreen blocks
+		// loop through visible blocks
 		var index = table.pixelToIndex(startY);
+		var existingSliceStart = table.sliceStart;
+		var existingSliceEnd = table.sliceEnd;
 
 		for(var y = table.getItemTop(index); y < endY;) {
 			var h = table.getItemHeight(index);
-			var element = table.getComponent(index, grabNode());
-			element.css({
-				position: "absolute",
-				left: "0",
-				right: "0",
-				top: y
-			});
-			element.data("flytable-index", index);
-			includeInSlice(table, index);
-			container.append(element);
+
+			if(index < existingSliceStart || index > existingSliceEnd) {
+				var element = table.getComponent(index, grabNode());
+				element.css({
+					position: "absolute",
+					left: "0",
+					right: "0",
+					top: y
+				});
+				element.data("flytable-index", index);
+				includeInSlice(table, index);
+				container.append(element);
+				table.inUse.push(element);
+			}
+			
 			index++;
 			y += h;
 		}
@@ -127,7 +157,7 @@ function setupFlyTable(element) {
 		var screenY = $(window).scrollTop();
 		var tableY = this.container.offset().top;
 		var delta = screenY - tableY;
-		renderSlice(delta, delta + $(window).height());
+		renderSlice(table, delta, delta + $(window).height());
 	}
 	
 	// utility for displaying datasets of uniform row height
