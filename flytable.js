@@ -4,8 +4,8 @@ function setupFlyTable(element) {
 	table.container = element;
 	table.recycle = [];
 	table.inUse = [];
-	table.sliceStart = 0;
-	table.sliceEnd = 0;
+	table.sliceStart = 1/0;
+	table.sliceEnd = -1;
 
 	// extra space on either side to render
 	table.scrollPadding = 10;
@@ -40,9 +40,9 @@ function setupFlyTable(element) {
 
 	/* Internal Functions */
 	
-	function recycleOffscreenNodes() {
+	function recycleOffscreenNodes(table, startY, endY) {
 	}
-	function recycleAllNodes() {
+	function recycleAllNodes(table) {
 		var inUse = table.inUse;
 		var recycle = table.recycle;
 		
@@ -51,7 +51,14 @@ function setupFlyTable(element) {
 		}
 		
 		table.inUse = [];
+		table.sliceStart = 1/0;
+		table.sliceEnd = -1;
 	}
+	
+	function includeInSlice(table, index) {
+		table.sliceStart = Math.min(index, table.sliceStart);
+		table.sliceEnd = Math.max(table.sliceEnd, index);
+	};
 
 	function grabNode() {
 		if(table.recycle.length > 0) {
@@ -74,34 +81,39 @@ function setupFlyTable(element) {
 	}
 	
 	function renderSlice(startY, endY) {
-		var t = table.container;
-		t.empty();
-		
+		// prepare table element
+		var container = table.container;
 		table.recalculate();
-		recycleAllNodes();
-		
-		// pad region
 		var height = table.getTotalHeight();
-		startY = Math.max(0, startY - table.scrollPadding);
-		endY = Math.min(endY + table.scrollPadding, height)
-		
-		var index = table.pixelToIndex(startY);
-		
-		table.container.css({
+
+		container.css({
 			position: "relative",
 			height: height
 		});
+		
+		// pad region
+		startY = Math.max(0, startY - table.scrollPadding);
+		endY = Math.min(endY + table.scrollPadding, height)
+		
+		// clear offscreen nodes
+		recycleAllNodes(table);
+		container.empty();
+
+		// loop through onscreen blocks
+		var index = table.pixelToIndex(startY);
 
 		for(var y = table.getItemTop(index); y < endY;) {
 			var h = table.getItemHeight(index);
-			var domNode = table.getComponent(index, grabNode());
-			domNode.css({
+			var element = table.getComponent(index, grabNode());
+			element.css({
 				position: "absolute",
 				left: "0",
 				right: "0",
 				top: y
 			});
-			t.append(domNode);
+			element.data("flytable-index", index);
+			includeInSlice(table, index);
+			container.append(element);
 			index++;
 			y += h;
 		}
