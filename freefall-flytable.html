@@ -36,7 +36,7 @@ $(function() {
 	var numComics = 2650;
 	
 	// cook data
-	var padding = 10;
+	var padding = 20;
 	
 	var h = data[0].h;
 	var ext = data[0].ext;
@@ -139,10 +139,11 @@ $(function() {
 		// 1-index comics
 		comicNum = index + 1;
 		var entry = getData(index);
-		var url = getUrl(comicNum, entry.ext);
+		var imgUrl = getUrl(comicNum, entry.ext);
+		var pageUrl = getUrl(comicNum, ".htm");
 		//node.find(".dbg").text(url);
-		node.find(".num").text(comicNum);
-		node.find("img").attr("src", url).show();
+		node.find(".num").text(comicNum).attr("href", pageUrl);
+		node.find("img").attr("src", imgUrl).show();
 		
 		return node;
 	};
@@ -201,7 +202,7 @@ $(function() {
 <div class="comic">
 <div class="bg">
 <span class="dbg"></span>
-<span class="num"></span>
+<a class="num"></a>
 <img />
 </div>
 </div>
