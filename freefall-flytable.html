@@ -22,10 +22,45 @@ $(function() {
 	};
 	
 	// comic dimension data
+	var data = [
+		{i: 1, h: 242},
+		{i: 1699, h: 310},
+		{i: 1779, h: 629},
+		{i: 1780, h: 310},
+		{i: 2545, h: 334},
+		{i: 2546, h: 310},
+	];
 	var numComics = 2650;
-	var firstColor = 1253;
-	var height = 320;
 	
+	// cook data
+	var padding = 10;
+	
+	var h = data[0].h;
+	var prev = {i: 0, h: 0, y: 0, last: 1};
+	for(var i = 0; i < data.length; i++) {
+		var item = data[i];
+		
+		if(item.h) {
+			h = item.h + padding;
+		}
+		item.h = h;
+		
+		var span = item.i - prev.i;
+		item.y = prev.y + span * prev.h;
+		
+		prev.last = item.i;
+		prev.lastY = item.y;
+		prev = item;
+	}
+	var lastEntry = data[data.length - 1];
+	lastEntry.last = numComics;
+
+	var lastSpan = numComics - lastEntry.i;
+	var totalHeight = lastEntry.y + lastEntry.h * lastSpan;
+	lastEntry.lastY = totalHeight;
+	
+	// URL logic
+	var firstColor = 1253;
 	function getUrl(num) {
 		var bin = ((~~((num - 1) / 100)) * 100) + 100;
 		//bin = fixedLen(bin, 3);
@@ -43,26 +78,62 @@ $(function() {
 	
 	
 	// flytable config
-	table.scrollPadding = 400;
+	table.scrollPadding = 300;
 
 	table.getTotalHeight = function() {
-		return numComics * height;
+		return totalHeight;
 	};
 	
+	function getData(index) {
+		for(var i = 0; i < data.length; i++) {
+			var item = data[i];
+			
+			if(index >= item.i && index < item.last) {
+				return item;
+			}
+		}
+		return false; // failure, crash
+	};
 	table.getItemTop = function(index) {
-		return height*index;
+		var entry = getData(index);
+		
+		var offset = index - entry.i;
+		var y = entry.y + entry.h * offset;
+
+		return y;
 	};
 	table.getItemHeight = function(index) {
-		return height;
+		var entry = getData(index);
+		return entry.h;
 	};
 
 	table.pixelToIndex = function(y) {
-		return ~~(y / height);
+		for(var i = 0; i < data.length; i++) {
+			var item = data[i];
+			
+			if(y >= item.y && y < item.lastY) {
+				var offset = y - item.y;
+				
+				var indexOffset = ~~(offset / item.h);
+				
+				return item.i + indexOffset;
+			}
+		}
+		
+		if(y <= 0) {
+			return 0;
+		} else {
+			return numComics;
+		}
 	}
-
+	var ii = 0;
 	table.getComponent = function(index, node) {
 		if(!node) {
 			node = tmpl.clone();
+			//node.find(".dbg").text(""+(ii++));
+			node.find("img").on("load", function(evt) {
+				console.log("img", evt);
+			});
 		}
 		// 1-index comics
 		index = index + 1;
