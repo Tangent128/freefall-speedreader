@@ -23,7 +23,10 @@ $(function() {
 	
 	// comic dimension data
 	var data = [
-		{i: 1, h: 242},
+		{i: 0, h: 242, ext: ".gif"},
+		{i: 1252, ext: ".png"},
+		{i: 1400, ext: ".jpg"},
+		{i: 1401, ext: ".png"},
 		{i: 1699, h: 310},
 		{i: 1779, h: 629},
 		{i: 1780, h: 310},
@@ -36,14 +39,16 @@ $(function() {
 	var padding = 10;
 	
 	var h = data[0].h;
+	var ext = data[0].ext;
 	var prev = {i: 0, h: 0, y: 0, last: 1};
 	for(var i = 0; i < data.length; i++) {
 		var item = data[i];
 		
-		if(item.h) {
-			h = item.h + padding;
-		}
+		if(item.h) {h = item.h + padding;}
 		item.h = h;
+		
+		if(item.ext) {ext = item.ext;}
+		item.ext = ext;
 		
 		var span = item.i - prev.i;
 		item.y = prev.y + span * prev.h;
@@ -61,18 +66,14 @@ $(function() {
 	
 	// URL logic
 	var firstColor = 1253;
-	function getUrl(num) {
+	function getUrl(num, ext) {
 		var bin = ((~~((num - 1) / 100)) * 100) + 100;
-		//bin = fixedLen(bin, 3);
 		num = fixedLen(num, 5);
 		
-		if(num == 1401) {
-			// special case
-			return "http://freefall.purrsia.com/ff1500/fc01401.jpg";
-		} else if(num >= firstColor) {
-			return "http://freefall.purrsia.com/ff"+bin+"/fc"+num+".png";
+		if(num >= firstColor) {
+			return "http://freefall.purrsia.com/ff"+bin+"/fc"+num+ext;
 		} else {
-			return "http://freefall.purrsia.com/ff"+bin+"/fv"+num+".gif";
+			return "http://freefall.purrsia.com/ff"+bin+"/fv"+num+ext;
 		}
 	};
 	
@@ -136,10 +137,11 @@ $(function() {
 			});
 		}
 		// 1-index comics
-		index = index + 1;
-		var url = getUrl(index);
+		comicNum = index + 1;
+		var entry = getData(index);
+		var url = getUrl(comicNum, entry.ext);
 		//node.find(".dbg").text(url);
-		node.find(".num").text(index);
+		node.find(".num").text(comicNum);
 		node.find("img").attr("src", url).show();
 		
 		return node;
