@@ -12,7 +12,7 @@ function setupFlyTable(element) {
 	
 	/* Public Overrides */
 	
-	table.recalculate = function() {}
+	table.recalculate = function() {};
 	
 	table.getComponent = function(index, recycle) {
 		if(!recycle) {
@@ -21,6 +21,8 @@ function setupFlyTable(element) {
 		
 		return recycle;
 	}
+	
+	table.recycleComponent = function(element) {};
 	
 	table.getItemTop = function(index) {
 		return this.getItemHeight(0)*index; // arbitrary value
@@ -55,6 +57,7 @@ function setupFlyTable(element) {
 			
 			if(index < firstVisible || index > lastVisible) {
 				recycle.push(element);
+				table.recycleComponent(element);
 				element.remove();
 			} else {
 				stillInUse.push(element);
@@ -136,7 +139,8 @@ function setupFlyTable(element) {
 					position: "absolute",
 					left: "0",
 					right: "0",
-					top: y
+					top: y,
+					height: h
 				});
 				element.data("flytable-index", index);
 				includeInSlice(table, index);
