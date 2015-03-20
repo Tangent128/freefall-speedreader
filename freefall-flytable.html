@@ -23,23 +23,25 @@ $(function() {
 	
 	// comic dimension data
 	var data = [
-		// TODO: 1-index for clarity
-		{i: 0, h: 242, ext: ".gif"},
+		{i: 1, h: 242, ext: ".gif"},
 		{i: 700, h: 492},
 		{i: 701, h: 242},
 		{i: 710, h: 492},
 		{i: 711, h: 242},
-		{i: 1252, ext: ".png"},
-		{i: 1400, ext: ".jpg"},
-		{i: 1401, ext: ".png"},
-		// TODO: 1496
-		{i: 1699, h: 310},
-		{i: 1779, h: 629},
-		{i: 1780, h: 310},
-		{i: 2545, h: 334},
-		{i: 2546, h: 310},
+		{i: 1253, ext: ".png"},
+		{i: 1401, ext: ".jpg"},
+		{i: 1402, ext: ".png"},
+		{i: 1492, h: 489},
+		{i: 1493, h: 242},
+		{i: 1496, h: 489},
+		{i: 1497, h: 242},
+		{i: 1700, h: 310},
+		{i: 1780, h: 629},
+		{i: 1781, h: 310},
+		{i: 2546, h: 334},
+		{i: 2547, h: 310},
 	];
-	var numComics = 2630;
+	var numComics = 2629;
 	
 	// cook data
 	var padding = 20;
@@ -66,7 +68,7 @@ $(function() {
 	var lastEntry = data[data.length - 1];
 	lastEntry.last = numComics + 1;
 
-	var lastSpan = numComics - lastEntry.i;
+	var lastSpan = lastEntry.last - lastEntry.i;
 	var totalHeight = lastEntry.y + lastEntry.h * lastSpan;
 	lastEntry.lastY = totalHeight;
 	
@@ -135,7 +137,7 @@ $(function() {
 		}
 	}
 	var ii = 0;
-	table.getComponent = function(index, node) {
+	table.getComponent = function(comicNum, node) {
 		if(!node) {
 			node = tmpl.clone();
 			//node.find(".dbg").text(""+(ii++));
@@ -143,9 +145,7 @@ $(function() {
 				console.log("img", evt);
 			});
 		}
-		// 1-index comics
-		comicNum = index + 1;
-		var entry = getData(index);
+		var entry = getData(comicNum);
 		var imgUrl = getUrl(comicNum, entry.ext);
 		var pageUrl = getUrl(comicNum, ".htm");
 		//node.find(".dbg").text(url);
@@ -164,12 +164,18 @@ $(function() {
 	});
 	
 	table.render();
+	
+	$("#moreLink").attr("href", getUrl(numComics, ".htm"));
 
 })
 
 </script>
 
 <style>
+body {
+	color: #000;
+	background: #ffcc99 url(http://freefall.purrsia.com/bkgd.gif);
+}
 .tmpl {
 	display: none;
 }
@@ -186,9 +192,7 @@ $(function() {
 .comic .num {
 	position: absolute;
 	top: 0; right: 32px;
-	/* color: blue; */
 	font-weight: bold;
-	background: white;
 	padding: 3px;
 	z-index: 1;
 }
@@ -197,11 +201,28 @@ $(function() {
 	top: 0; left: 32px;
 	z-index: 0;
 }
+.moreBlock {
+	width: calc(982px - 16px * 2);
+	margin-left: 32px;
+	padding: 16px;
+	
+	background: #0dc8b0;
+	/*border-radius: 16px;*/
+	border: 3px solid black;
+	
+	font-size: 24px;
+}
 </style>
 </head>
 <body>
 
 <div id="contain"></div>
+
+<div class="comic">
+<div class="moreBlock">
+Continue reading at <a id="moreLink">the proper archives</a>
+</div>
+</div>
 
 <hr />
 
