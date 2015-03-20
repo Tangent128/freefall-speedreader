@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Flyweight Table</title>
+<title>Freefall Archive Binge Speedreader</title>
 <script src="jquery-1.11.0.min.js"></script>
 <script src="flytable.js"></script>
 
@@ -23,28 +23,30 @@ $(function() {
 	
 	// comic dimension data
 	var data = [
+		// TODO: 1-index for clarity
 		{i: 0, h: 242, ext: ".gif"},
-		{i: 699, h: 492},
-		{i: 700, h: 242},
-		{i: 709, h: 492},
-		{i: 710, h: 242},
+		{i: 700, h: 492},
+		{i: 701, h: 242},
+		{i: 710, h: 492},
+		{i: 711, h: 242},
 		{i: 1252, ext: ".png"},
 		{i: 1400, ext: ".jpg"},
 		{i: 1401, ext: ".png"},
+		// TODO: 1496
 		{i: 1699, h: 310},
 		{i: 1779, h: 629},
 		{i: 1780, h: 310},
 		{i: 2545, h: 334},
 		{i: 2546, h: 310},
 	];
-	var numComics = 2629;
+	var numComics = 2630;
 	
 	// cook data
 	var padding = 20;
 	
 	var h = data[0].h;
 	var ext = data[0].ext;
-	var prev = {i: 0, h: 0, y: 0, last: 1};
+	var prev = {i: 0, h: 0, y: 0};
 	for(var i = 0; i < data.length; i++) {
 		var item = data[i];
 		
@@ -62,7 +64,7 @@ $(function() {
 		prev = item;
 	}
 	var lastEntry = data[data.length - 1];
-	lastEntry.last = numComics;
+	lastEntry.last = numComics + 1;
 
 	var lastSpan = numComics - lastEntry.i;
 	var totalHeight = lastEntry.y + lastEntry.h * lastSpan;
@@ -72,12 +74,12 @@ $(function() {
 	var firstColor = 1253;
 	function getUrl(num, ext) {
 		var bin = ((~~((num - 1) / 100)) * 100) + 100;
-		num = fixedLen(num, 5);
+		var padNum = fixedLen(num, 5);
 		
 		if(num >= firstColor) {
-			return "http://freefall.purrsia.com/ff"+bin+"/fc"+num+ext;
+			return "http://freefall.purrsia.com/ff"+bin+"/fc"+padNum+ext;
 		} else {
-			return "http://freefall.purrsia.com/ff"+bin+"/fv"+num+ext;
+			return "http://freefall.purrsia.com/ff"+bin+"/fv"+padNum+ext;
 		}
 	};
 	
@@ -121,6 +123,7 @@ $(function() {
 				
 				var indexOffset = ~~(offset / item.h);
 				
+				// subtract one because i is 1-indexed?
 				return item.i + indexOffset;
 			}
 		}
