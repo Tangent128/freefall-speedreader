@@ -7,9 +7,8 @@
 
 <script>
 
-//http://freefall.purrsia.com/ff100/fv00001.gif
-//http://freefall.purrsia.com/ff400/fv00376.gif
-//http://freefall.purrsia.com/ff1300/fc01253.png
+/* Speedreader and flytable.js coded by tangent128 */
+/* https://github.com/Tangent128 */
 
 $(function() {
 
@@ -103,7 +102,7 @@ $(function() {
 				return item;
 			}
 		}
-		return false; // failure, crash
+		return false; // failure, just crash
 	};
 	table.getItemTop = function(index) {
 		var entry = getData(index);
@@ -127,7 +126,6 @@ $(function() {
 				
 				var indexOffset = ~~(offset / item.h);
 				
-				// subtract one because i is 1-indexed?
 				return item.i + indexOffset;
 			}
 		}

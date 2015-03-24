@@ -1,3 +1,6 @@
+/* by Tangent 128 */
+/* https://github.com/Tangent128 */
+
 function setupFlyTable(element) {
 	
 	var table = {};
@@ -152,7 +155,6 @@ function setupFlyTable(element) {
 			y += h;
 		}
 		
-		//console.log(height + "pixels high")
 	}
 	
 	/* Public Methods */
