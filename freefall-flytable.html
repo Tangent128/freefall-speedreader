@@ -169,6 +169,10 @@ $(function() {
 			
 			window.scrollTo(0, baseY + comicY);
 			console.log("scrollTo", baseY + comicY);
+			
+			// just in case the window.scrollTo()
+			// call didn't fire a scroll event
+			table.render();
 		}
 	}
 
@@ -181,8 +185,9 @@ $(function() {
 		table.render();
 	});
 	
-	jumpToHash()
+	// pre-render ensures the page has correct vertical space usage
 	table.render();
+	jumpToHash();
 	
 	$("#moreLink").attr("href", getUrl(numComics, ".htm"));
 
