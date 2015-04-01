@@ -179,6 +179,7 @@ $(function() {
 		if(window.history.replaceState) {
 			var baseY = container.offset().top;
 			var comicY = window.scrollY - baseY;
+			comicY += 80; // fudge a bit
 			
 			var comicNum = table.pixelToIndex(comicY);
 			
