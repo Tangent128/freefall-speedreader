@@ -12,7 +12,8 @@
 
 $(function() {
 
-	var table = setupFlyTable($("#contain"));
+	var container = $("#contain");
+	var table = setupFlyTable(container);
 	window.DebugTable = table;
 	var tmpl = $(".tmpl .comic");
 
@@ -20,7 +21,7 @@ $(function() {
 		return("0000000000000000"+num).slice(-len);
 	};
 	
-	// comic dimension data
+	/* comic dimension data */
 	var data = [
 		{i: 1, h: 242, ext: ".gif"},
 		{i: 700, h: 492},
@@ -42,7 +43,7 @@ $(function() {
 		{i: 2546, h: 334},
 		{i: 2547, h: 310},
 	];
-	var numComics = 2633;
+	var numComics = 2634;
 	
 	// cook data
 	var padding = 20;
@@ -87,7 +88,7 @@ $(function() {
 	};
 	
 	
-	// flytable config
+	/* flytable config */
 	table.scrollPadding = 300;
 
 	table.getTotalHeight = function() {
@@ -158,11 +159,29 @@ $(function() {
 		node.find("img").attr("src", null);
 	};
 
-	// event hookup
+	/* support for linking to individual comics */
+
+	function jumpToHash() {
+		if(location.hash) {
+			var comicNum = 1 * location.hash.replace("#", "");
+			var baseY = container.offset().top;
+			var comicY = table.getItemTop(comicNum);
+			
+			window.scrollTo(0, baseY + comicY);
+			console.log("scrollTo", baseY + comicY);
+		}
+	}
+
+	/* event hookup */
 	$(document).on("scroll", function() {
 		table.render();
 	});
+	$(window).on("hashchange", function() {
+		jumpToHash()
+		table.render();
+	});
 	
+	jumpToHash()
 	table.render();
 	
 	$("#moreLink").attr("href", getUrl(numComics, ".htm"));
