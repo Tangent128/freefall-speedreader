@@ -141,10 +141,10 @@ $(function() {
 	table.getComponent = function(comicNum, node) {
 		if(!node) {
 			node = tmpl.clone();
-			//node.find(".dbg").text(""+(ii++));
+			/*node.find(".dbg").text(""+(ii++));
 			node.find("img").on("load", function(evt) {
 				console.log("img", evt);
-			});
+			});*/
 		}
 		var entry = getData(comicNum);
 		var imgUrl = getUrl(comicNum, entry.ext);
@@ -168,16 +168,27 @@ $(function() {
 			var comicY = table.getItemTop(comicNum);
 			
 			window.scrollTo(0, baseY + comicY);
-			console.log("scrollTo", baseY + comicY);
 			
 			// just in case the window.scrollTo()
 			// call didn't fire a scroll event
 			table.render();
 		}
 	}
+	
+	function updateHash() {
+		if(window.history.replaceState) {
+			var baseY = container.offset().top;
+			var comicY = window.scrollY - baseY;
+			
+			var comicNum = table.pixelToIndex(comicY);
+			
+			window.history.replaceState(comicNum, "Freefall #"+comicNum, "#"+comicNum);
+		}
+	}
 
 	/* event hookup */
 	$(document).on("scroll", function() {
+		updateHash();
 		table.render();
 	});
 	$(window).on("hashchange", function() {
