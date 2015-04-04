@@ -174,18 +174,65 @@ $(function() {
 			// call didn't fire a scroll event
 			table.render();
 		}
-	}
+	};
+	
+	function currentComic() {
+		var baseY = container.offset().top;
+		var comicY = window.scrollY - baseY;
+		comicY += 80; // fudge a bit
+		
+		return table.pixelToIndex(comicY);
+	};
 	
 	function updateHash() {
 		if(window.history.replaceState) {
-			var baseY = container.offset().top;
-			var comicY = window.scrollY - baseY;
-			comicY += 80; // fudge a bit
-			
-			var comicNum = table.pixelToIndex(comicY);
-			
+			var comicNum = currentComic();
 			window.history.replaceState(comicNum, "Freefall #"+comicNum, "#"+comicNum);
 		}
+	};
+	
+	/* support for marking & deleting local bookmarks */
+	
+	var BOOKMARK_KEY = "/comics/freefall/bookmarks/list";
+	var $bookmarkTmpl = $(".tmpl .entry");
+	var $bookmarkList = $("#bookmarkList");
+	
+	function getBookmarks() {
+		return JSON.parse(localStorage[BOOKMARK_KEY] || "[]");
+	};
+	function updateBookmarkList(marks) {
+		$bookmarkList.empty();
+		$.each(getBookmarks(), function(i) {
+			var entry = $bookmarkTmpl.clone();
+			entry.find(".link").attr("href", this.url).text(this.text);
+			entry.find(".deleteMark").attr("data-index", i);
+			$bookmarkList.append(entry);
+		});
+	};
+	function saveBookmarks(marks) {
+		localStorage[BOOKMARK_KEY] = JSON.stringify(marks);
+		updateBookmarkList(marks);
+	};
+	
+	$(document).on("click", "#bookmarkBox .markPlace", function() {
+		var comicNum = currentComic();
+		var list = getBookmarks();
+		list.push({
+			text: "#"+comicNum,
+			url: "#"+comicNum
+		});
+		saveBookmarks(list);
+	});
+	$(document).on("click", "#bookmarkBox .deleteMark", function() {
+		var index = 1 * $(this).attr("data-index");
+		var list = getBookmarks();
+		list.splice(index, 1);
+		saveBookmarks(list);
+	});
+
+	if(window.JSON && window.localStorage) {
+		$("#bookmarkBox").show();
+		updateBookmarkList();
 	}
 
 	/* event hookup */
@@ -197,6 +244,14 @@ $(function() {
 		jumpToHash()
 		table.render();
 	});
+	if(window.addEventListener) {
+		// can't catch this event with jQuery, somehow
+		window.addEventListener("storage", function(e) {
+			if(e.key == BOOKMARK_KEY) {
+				updateBookmarkList();
+			}
+		});
+	}
 	
 	// pre-render ensures the page has correct vertical space usage
 	table.render();
@@ -204,7 +259,7 @@ $(function() {
 	
 	$("#moreLink").attr("href", getUrl(numComics, ".htm"));
 
-})
+});
 
 </script>
 
@@ -265,6 +320,7 @@ body {
 	font-size: 24px;
 }
 #bookmarkBox {
+	display: none;
 	position: fixed;
 	right: 1em;
 	bottom: 1em;
@@ -316,21 +372,6 @@ Continue reading at <a id="moreLink">the proper archives</a>
 
 <div id="bookmarkBox">
 	<div id="bookmarkList">
-		<div class="entry">
-			<a href="#1000">#1000</a>
-			<a class="deleteMark">⨉</a>
-			<hr />
-		</div>
-		<div class="entry">
-			<a href="#2000">#2000</a>
-			<a class="deleteMark">⨉</a>
-			<hr />
-		</div>
-		<div class="entry">
-			<a href="#1079">#1079</a>
-			<a class="deleteMark">⨉</a>
-			<hr />
-		</div>
 	</div>
 	<div class="entry">
 		<button class="markPlace">Save Spot</button>
