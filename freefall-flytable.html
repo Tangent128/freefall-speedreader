@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8" />
 <title>Freefall Archive Binge Speedreader</title>
 <script src="jquery-1.11.0.min.js"></script>
 <script src="flytable.js"></script>
@@ -43,7 +44,7 @@ $(function() {
 		{i: 2546, h: 334},
 		{i: 2547, h: 310},
 	];
-	var numComics = 2634;
+	var numComics = 2635;
 	
 	// cook data
 	var padding = 20;
@@ -211,6 +212,7 @@ $(function() {
 body {
 	color: #000;
 	background: #ffcc99 url(http://freefall.purrsia.com/bkgd.gif);
+	font-size: 16px;
 }
 .tmpl {
 	display: none;
@@ -247,8 +249,6 @@ body {
 	border: 2px solid black;
 	width: calc(768px - (16px + 2px) * 2);
 	margin-bottom: 20px;
-	font-size: 16px;
-	
 }
 .headBlock h1 {
 	margin: 0;
@@ -261,9 +261,34 @@ body {
 	width: calc(982px - (16px + 3px) * 2);
 
 	background: #0dc8b0;
-	/*border-radius: 16px;*/
 	
 	font-size: 24px;
+}
+#bookmarkBox {
+	position: fixed;
+	right: 1em;
+	bottom: 1em;
+	
+	border: solid thin #00f;
+	
+	background: #fff;
+}
+#bookmarkBox .entry {
+	display: block;
+	/*border-bottom: groove 3px #00f;*/
+}
+#bookmarkBox a, #bookmarkBox hr {
+	color: #00f;
+}
+#bookmarkBox hr {
+	clear: both;
+	margin: 0px;
+}
+#bookmarkBox .deleteMark {
+	color: #f00;
+	cursor: pointer;
+	float: right;
+	margin-bottom: 5px;
 }
 </style>
 </head>
@@ -289,14 +314,42 @@ Continue reading at <a id="moreLink">the proper archives</a>
 
 <p class="small">Freefall is written and drawn by Mark Stanley. This interface was coded by Tangent.</p>
 
+<div id="bookmarkBox">
+	<div id="bookmarkList">
+		<div class="entry">
+			<a href="#1000">#1000</a>
+			<a class="deleteMark">⨉</a>
+			<hr />
+		</div>
+		<div class="entry">
+			<a href="#2000">#2000</a>
+			<a class="deleteMark">⨉</a>
+			<hr />
+		</div>
+		<div class="entry">
+			<a href="#1079">#1079</a>
+			<a class="deleteMark">⨉</a>
+			<hr />
+		</div>
+	</div>
+	<div class="entry">
+		<button class="markPlace">Save Spot</button>
+	</div>
+</div>
+
 <div class="tmpl">
-<div class="comic">
-<div class="bg">
-<span class="dbg"></span>
-<a class="num"></a>
-<img />
-</div>
-</div>
+	<div class="comic">
+		<div class="bg">
+			<span class="dbg"></span>
+			<a class="num"></a>
+			<img />
+		</div>
+	</div>
+	<div class="entry">
+		<a class="link"></a>
+		<a class="deleteMark">⨉</a>
+		<hr />
+	</div>
 </div>
 
 </body>
