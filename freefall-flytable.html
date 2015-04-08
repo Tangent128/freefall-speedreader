@@ -13,6 +13,7 @@
 
 $(function() {
 
+	
 	var container = $("#contain");
 	var table = setupFlyTable(container);
 	window.DebugTable = table;
@@ -43,37 +44,72 @@ $(function() {
 		{i: 1781, h: 310},
 		{i: 2546, h: 334},
 		{i: 2547, h: 310},
+		{i: 2638}
 	];
-	var numComics = 2638;
 	
 	// cook data
-	var padding = 20;
 	
-	var h = data[0].h;
-	var ext = data[0].ext;
-	var prev = {i: 0, h: 0, y: 0};
-	for(var i = 0; i < data.length; i++) {
-		var item = data[i];
+	/**
+	 * process data array into form easy for flytable code to process:
+	 * - calculate index and y-axis extents to determine when search has found right record
+	 * - copy forward unchanged metadata attributes for use by comic renderer
+	 *
+	 * returns the calculated total height of the comics
+	 */
+	function cookData(array, rowPadding) {
 		
-		if(item.h) {h = item.h + padding;}
-		item.h = h;
+		var prev = {i: 0, h: 0, y: 0};
+		var first = array[0];
 		
-		if(item.ext) {ext = item.ext;}
-		item.ext = ext;
+		// discover custom attributes
+		var attributes = [];
+		for(key in first) {
+			if(!(key in prev)) {
+				attributes.push(key);
+			}
+		}
 		
-		var span = item.i - prev.i;
-		item.y = prev.y + span * prev.h;
+		for(var i = 0; i < array.length; i++) {
+			var item = array[i];
+			
+			// copy attributes forward
+			for(var a = 0; a < attributes.length; a++) {
+				var attr = attributes[a];
+				if(!(attr in item)) {
+					item[attr] = prev[attr];
+				}
+			}
+			
+			// copy height forward + ensure requested padding
+			if(item.h) {
+				item.h += rowPadding;
+			} else {
+				item.h = prev.h;
+			}
+			
+			// calculate segment height & spanned indices
+			var span = item.i - prev.i;
+			item.y = prev.y + span * prev.h;
+			
+			prev.last = item.i;
+			prev.lastY = item.y;
+			prev = item;
+		}
 		
-		prev.last = item.i;
-		prev.lastY = item.y;
-		prev = item;
-	}
-	var lastEntry = data[data.length - 1];
-	lastEntry.last = numComics + 1;
+		// last item needs to be given explicitly
+		var lastEntry = array[data.length - 1];
+		array.last = lastEntry.i;
+		lastEntry.last = lastEntry.i + 1;
 
-	var lastSpan = lastEntry.last - lastEntry.i;
-	var totalHeight = lastEntry.y + lastEntry.h * lastSpan;
-	lastEntry.lastY = totalHeight;
+		var lastSpan = lastEntry.last - lastEntry.i;
+		var totalHeight = lastEntry.y + lastEntry.h * lastSpan;
+		lastEntry.lastY = totalHeight;
+		
+		return totalHeight;
+	}
+	
+	var totalHeight = cookData(data, 20);
+
 	
 	// URL logic
 	var firstColor = 1253;
@@ -135,7 +171,7 @@ $(function() {
 		if(y <= 0) {
 			return 0;
 		} else {
-			return numComics;
+			return data.last;
 		}
 	}
 	var ii = 0;
@@ -257,7 +293,7 @@ $(function() {
 	table.render();
 	jumpToHash();
 	
-	$("#moreLink").attr("href", getUrl(numComics, ".htm"));
+	$("#moreLink").attr("href", getUrl(data.last, ".htm"));
 
 });
 
