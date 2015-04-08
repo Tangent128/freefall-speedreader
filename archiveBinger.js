@@ -17,8 +17,15 @@
 // Load flytable.js and jQuery before this
 $(function() {
 	
+	/* Utility Functions (for use by configuration) */
+	var Utility = {};
+	
+	Utility.fixedLen = function (num,len){
+		return("0000000000000000"+num).slice(-len);
+	};
+	
 	/* Get Config */
-	var config = SetupSpeedreader();
+	var config = SetupSpeedreader(Utility);
 	
 	var empty = $([]);
 	config = $.extend({

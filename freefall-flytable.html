@@ -12,7 +12,7 @@
 /* Speedreader, archiveBinger.js, and flytable.js coded by tangent128 */
 /* https://github.com/Tangent128 */
 
-function SetupSpeedreader() {
+function SetupSpeedreader(Utility) {
 
 	/* comic dimension data */
 	var data = [
@@ -39,12 +39,9 @@ function SetupSpeedreader() {
 	];
 	
 	// URL logic
-	function fixedLen(num,len){
-		return("0000000000000000"+num).slice(-len);
-	};
 	function getUrl(num, prefix, ext) {
 		var bin = ((~~((num - 1) / 100)) * 100) + 100;
-		var padNum = fixedLen(num, 5);
+		var padNum = Utility.fixedLen(num, 5);
 		
 		return "http://freefall.purrsia.com/ff"+bin+"/"+prefix+padNum+ext;
 	};
