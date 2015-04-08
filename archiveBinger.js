@@ -10,6 +10,8 @@ $(function() {
 		/* required:
 		data
 		comicContainer
+		comicTmpl
+		render(comicDiv, index#, metadataRecord)
 		*/
 		rowPadding: 20,
 		scrollPadding: 300
@@ -75,15 +77,72 @@ $(function() {
 		
 		return totalHeight;
 	};
+	
+	var data = config.data;
 	var totalHeight = cookData(config.data, config.rowPadding);
-		
+	
 	/* Setup Flytable */
-	var table = config.table;
+	var table = setupFlyTable(config.comicContainer);
+	window.DebugTable = table;
+
 	table.scrollPadding = config.scrollPadding;
 
 	table.getTotalHeight = function() {
 		return totalHeight;
 	};
+	
+	function getData(index) {
+		for(var i = 0; i < data.length; i++) {
+			var item = data[i];
+			
+			if(index >= item.i && index < item.last) {
+				return item;
+			}
+		}
+		return false; // failure, just crash
+	};
+	table.getItemTop = function(index) {
+		var entry = getData(index);
+		
+		var offset = index - entry.i;
+		var y = entry.y + entry.h * offset;
+
+		return y;
+	};
+	table.getItemHeight = function(index) {
+		var entry = getData(index);
+		return entry.h;
+	};
+
+	table.pixelToIndex = function(y) {
+		for(var i = 0; i < data.length; i++) {
+			var item = data[i];
+			
+			if(y >= item.y && y < item.lastY) {
+				var offset = y - item.y;
+				
+				var indexOffset = ~~(offset / item.h);
+				
+				return item.i + indexOffset;
+			}
+		}
+		
+		if(y <= 0) {
+			return 0;
+		} else {
+			return data.last;
+		}
+	}
+
+	table.getComponent = function(comicNum, node) {
+		if(!node) {
+			node = config.comicTmpl.clone();
+		}
+		config.render(node, comicNum, getData(comicNum));
+		
+		return node;
+	};
+	
 	
 	/* Setup Comic-Linking */
 
@@ -116,6 +175,7 @@ $(function() {
 		}
 	};
 	
+	
 	/* Setup Bookmarking */
 	
 	function getBookmarks() {
@@ -135,7 +195,9 @@ $(function() {
 		updateBookmarkList(marks);
 	};
 	
+	
 	/* Setup Events */
+	
 	$(document).on("scroll", function() {
 		updateHash();
 		table.render();

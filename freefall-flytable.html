@@ -14,15 +14,6 @@
 
 function SetupSpeedreader() {
 
-	var container = $("#contain");
-	var table = setupFlyTable(container);
-	window.DebugTable = table;
-	var tmpl = $(".tmpl .comic");
-
-	function fixedLen(num,len){
-		return("0000000000000000"+num).slice(-len);
-	};
-	
 	/* comic dimension data */
 	var data = [
 		{i: 1, h: 242, ext: ".gif"},
@@ -49,6 +40,9 @@ function SetupSpeedreader() {
 	
 	// URL logic
 	var firstColor = 1253;
+	function fixedLen(num,len){
+		return("0000000000000000"+num).slice(-len);
+	};
 	function getUrl(num, ext) {
 		var bin = ((~~((num - 1) / 100)) * 100) + 100;
 		var padNum = fixedLen(num, 5);
@@ -66,69 +60,14 @@ function SetupSpeedreader() {
 		node.find(".num").text(index).attr("href", pageUrl);
 		node.find("img").attr("src", imgUrl);
 	};
-	
-	
-	/* flytable config */
-	
-	function getData(index) {
-		for(var i = 0; i < data.length; i++) {
-			var item = data[i];
-			
-			if(index >= item.i && index < item.last) {
-				return item;
-			}
-		}
-		return false; // failure, just crash
-	};
-	table.getItemTop = function(index) {
-		var entry = getData(index);
-		
-		var offset = index - entry.i;
-		var y = entry.y + entry.h * offset;
-
-		return y;
-	};
-	table.getItemHeight = function(index) {
-		var entry = getData(index);
-		return entry.h;
-	};
-
-	table.pixelToIndex = function(y) {
-		for(var i = 0; i < data.length; i++) {
-			var item = data[i];
-			
-			if(y >= item.y && y < item.lastY) {
-				var offset = y - item.y;
-				
-				var indexOffset = ~~(offset / item.h);
-				
-				return item.i + indexOffset;
-			}
-		}
-		
-		if(y <= 0) {
-			return 0;
-		} else {
-			return data.last;
-		}
-	}
-
-	table.getComponent = function(comicNum, node) {
-		if(!node) {
-			node = tmpl.clone();
-		}
-		render(node, comicNum, getData(comicNum));
-		
-		return node;
-	};
-
 
 	$("#moreLink").attr("href", getUrl(data.last, ".htm"));
 
 	return {
-		table: table,
 		data: data,
 		comicContainer: $("#contain"),
+		comicTmpl: $(".tmpl .comic"),
+		render: render,
 		
 		bookmarkKey: "/comics/freefall/bookmarks/list",
 		bookmarkTmpl: $(".tmpl .entry"),
