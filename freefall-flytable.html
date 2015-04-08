@@ -13,7 +13,10 @@
 
 $(function() {
 
-	
+	var BOOKMARK_KEY = "/comics/freefall/bookmarks/list";
+	var $bookmarkTmpl = $(".tmpl .entry");
+	var $bookmarkList = $("#bookmarkList");
+
 	var container = $("#contain");
 	var table = setupFlyTable(container);
 	window.DebugTable = table;
@@ -124,6 +127,13 @@ $(function() {
 		}
 	};
 	
+	function render(node, index, record) {
+		var imgUrl = getUrl(index, record.ext);
+		var pageUrl = getUrl(index, ".htm");
+		node.find(".num").text(index).attr("href", pageUrl);
+		node.find("img").attr("src", imgUrl);
+	};
+	
 	
 	/* flytable config */
 	table.scrollPadding = 300;
@@ -174,26 +184,14 @@ $(function() {
 			return data.last;
 		}
 	}
-	var ii = 0;
+
 	table.getComponent = function(comicNum, node) {
 		if(!node) {
 			node = tmpl.clone();
-			/*node.find(".dbg").text(""+(ii++));
-			node.find("img").on("load", function(evt) {
-				console.log("img", evt);
-			});*/
 		}
-		var entry = getData(comicNum);
-		var imgUrl = getUrl(comicNum, entry.ext);
-		var pageUrl = getUrl(comicNum, ".htm");
-		//node.find(".dbg").text(url);
-		node.find(".num").text(comicNum).attr("href", pageUrl);
-		node.find("img").attr("src", imgUrl).show();
+		render(node, comicNum, getData(comicNum));
 		
 		return node;
-	};
-	table.recycleComponent = function(node) {
-		node.find("img").attr("src", null);
 	};
 
 	/* support for linking to individual comics */
@@ -228,10 +226,6 @@ $(function() {
 	};
 	
 	/* support for marking & deleting local bookmarks */
-	
-	var BOOKMARK_KEY = "/comics/freefall/bookmarks/list";
-	var $bookmarkTmpl = $(".tmpl .entry");
-	var $bookmarkList = $("#bookmarkList");
 	
 	function getBookmarks() {
 		return JSON.parse(localStorage[BOOKMARK_KEY] || "[]");
