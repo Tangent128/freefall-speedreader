@@ -17,6 +17,7 @@ $(function() {
 		scrollPadding: 300
 	}, config);
 	
+	
 	/* Process Data */
 	
 	/**
@@ -81,7 +82,9 @@ $(function() {
 	var data = config.data;
 	var totalHeight = cookData(config.data, config.rowPadding);
 	
+	
 	/* Setup Flytable */
+	
 	var table = setupFlyTable(config.comicContainer);
 	window.DebugTable = table;
 
@@ -219,7 +222,7 @@ $(function() {
 			});
 		}
 		
-		$(config.bookmarkBox).on("click", ".markPlace", function() {
+		config.bookmarkBox.on("click", ".markPlace", function() {
 			var comicNum = currentComic();
 			var list = getBookmarks();
 			list.push({
@@ -228,7 +231,7 @@ $(function() {
 			});
 			saveBookmarks(list);
 		});
-		$(config.bookmarkBox).on("click", ".deleteMark", function() {
+		config.bookmarkBox.on("click", ".deleteMark", function() {
 			var index = 1 * $(this).attr("data-index");
 			var list = getBookmarks();
 			list.splice(index, 1);
@@ -246,5 +249,9 @@ $(function() {
 	// pre-render ensures the page has correct vertical space usage
 	table.render();
 	jumpToHash();
+	
+	if(config.onSetup) {
+		config.onSetup();
+	}
 	
 });

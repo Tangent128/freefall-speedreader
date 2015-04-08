@@ -61,13 +61,15 @@ function SetupSpeedreader() {
 		node.find("img").attr("src", imgUrl);
 	};
 
-	$("#moreLink").attr("href", getUrl(data.last, ".htm"));
-
 	return {
 		data: data,
 		comicContainer: $("#contain"),
 		comicTmpl: $(".tmpl .comic"),
 		render: render,
+		
+		onSetup: function() {
+			$("#moreLink").attr("href", getUrl(data.last, ".htm"));
+		},
 		
 		bookmarkKey: "/comics/freefall/bookmarks/list",
 		bookmarkTmpl: $(".tmpl .entry"),
