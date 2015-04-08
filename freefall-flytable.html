@@ -125,37 +125,6 @@ function SetupSpeedreader() {
 		
 		return node;
 	};
-
-	/* support for linking to individual comics */
-
-	function jumpToHash() {
-		if(location.hash) {
-			var comicNum = 1 * location.hash.replace("#", "");
-			var baseY = container.offset().top;
-			var comicY = table.getItemTop(comicNum);
-			
-			window.scrollTo(0, baseY + comicY);
-			
-			// just in case the window.scrollTo()
-			// call didn't fire a scroll event
-			table.render();
-		}
-	};
-	
-	function currentComic() {
-		var baseY = container.offset().top;
-		var comicY = window.scrollY - baseY;
-		comicY += 80; // fudge a bit
-		
-		return table.pixelToIndex(comicY);
-	};
-	
-	function updateHash() {
-		if(window.history.replaceState) {
-			var comicNum = currentComic();
-			window.history.replaceState(comicNum, "Freefall #"+comicNum, "#"+comicNum);
-		}
-	};
 	
 	/* support for marking & deleting local bookmarks */
 	
@@ -197,31 +166,12 @@ function SetupSpeedreader() {
 		updateBookmarkList();
 	}
 
-	/* event hookup */
-	$(document).on("scroll", function() {
-		updateHash();
-		table.render();
-	});
-	$(window).on("hashchange", function() {
-		jumpToHash()
-		table.render();
-	});
-	if(window.addEventListener) {
-		// can't catch this event with jQuery, somehow
-		window.addEventListener("storage", function(e) {
-			if(e.key == BOOKMARK_KEY) {
-				updateBookmarkList();
-			}
-		});
-	}
-	
-	jumpToHash();
-	
 	$("#moreLink").attr("href", getUrl(data.last, ".htm"));
 
 	return {
 		table: table,
-		data: data
+		data: data,
+		comicContainer: $("#contain")
 	};
 };
 

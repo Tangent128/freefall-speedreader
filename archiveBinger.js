@@ -7,7 +7,10 @@ $(function() {
 	
 	var empty = $([]);
 	config = $.extend({
-		// required: data
+		/* required:
+		data
+		comicContainer
+		*/
 		rowPadding: 20,
 		scrollPadding: 300
 	}, config);
@@ -82,11 +85,61 @@ $(function() {
 		return totalHeight;
 	};
 	
+	/* Setup Comic-Linking */
+
+	function jumpToHash() {
+		if(location.hash) {
+			var comicNum = 1 * location.hash.replace("#", "");
+			var baseY = config.comicContainer.offset().top;
+			var comicY = table.getItemTop(comicNum);
+			
+			window.scrollTo(0, baseY + comicY);
+			
+			// just in case the window.scrollTo()
+			// call didn't fire a scroll event
+			table.render();
+		}
+	};
+	
+	function currentComic() {
+		var baseY = config.comicContainer.offset().top;
+		var comicY = window.scrollY - baseY;
+		comicY += 80; // fudge a bit
+		
+		return table.pixelToIndex(comicY);
+	};
+	
+	function updateHash() {
+		if(window.history.replaceState) {
+			var comicNum = currentComic();
+			window.history.replaceState(comicNum, "#"+comicNum, "#"+comicNum);
+		}
+	};
+	
 	/* Setup Bookmarking */
+	
+	/* Setup Events */
+	$(document).on("scroll", function() {
+		updateHash();
+		table.render();
+	});
+	$(window).on("hashchange", function() {
+		jumpToHash()
+		table.render();
+	});
+	if(window.addEventListener) {
+		// can't catch this event with jQuery, somehow
+		window.addEventListener("storage", function(e) {
+			if(e.key == BOOKMARK_KEY) {
+				updateBookmarkList();
+			}
+		});
+	}
 	
 	/* Kickoff */
 
 	// pre-render ensures the page has correct vertical space usage
 	table.render();
+	jumpToHash();
 	
 });
