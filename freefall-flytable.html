@@ -5,13 +5,14 @@
 <title>Freefall Archive Binge Speedreader</title>
 <script src="jquery-1.11.0.min.js"></script>
 <script src="flytable.js"></script>
+<script src="archiveBinger.js"></script>
 
 <script>
 
 /* Speedreader and flytable.js coded by tangent128 */
 /* https://github.com/Tangent128 */
 
-$(function() {
+function SetupSpeedreader() {
 
 	var BOOKMARK_KEY = "/comics/freefall/bookmarks/list";
 	var $bookmarkTmpl = $(".tmpl .entry");
@@ -50,70 +51,6 @@ $(function() {
 		{i: 2638}
 	];
 	
-	// cook data
-	
-	/**
-	 * process data array into form easy for flytable code to process:
-	 * - calculate index and y-axis extents to determine when search has found right record
-	 * - copy forward unchanged metadata attributes for use by comic renderer
-	 *
-	 * returns the calculated total height of the comics
-	 */
-	function cookData(array, rowPadding) {
-		
-		var prev = {i: 0, h: 0, y: 0};
-		var first = array[0];
-		
-		// discover custom attributes
-		var attributes = [];
-		for(key in first) {
-			if(!(key in prev)) {
-				attributes.push(key);
-			}
-		}
-		
-		for(var i = 0; i < array.length; i++) {
-			var item = array[i];
-			
-			// copy attributes forward
-			for(var a = 0; a < attributes.length; a++) {
-				var attr = attributes[a];
-				if(!(attr in item)) {
-					item[attr] = prev[attr];
-				}
-			}
-			
-			// copy height forward + ensure requested padding
-			if(item.h) {
-				item.h += rowPadding;
-			} else {
-				item.h = prev.h;
-			}
-			
-			// calculate segment height & spanned indices
-			var span = item.i - prev.i;
-			item.y = prev.y + span * prev.h;
-			
-			prev.last = item.i;
-			prev.lastY = item.y;
-			prev = item;
-		}
-		
-		// last item needs to be given explicitly
-		var lastEntry = array[data.length - 1];
-		array.last = lastEntry.i;
-		lastEntry.last = lastEntry.i + 1;
-
-		var lastSpan = lastEntry.last - lastEntry.i;
-		var totalHeight = lastEntry.y + lastEntry.h * lastSpan;
-		lastEntry.lastY = totalHeight;
-		
-		return totalHeight;
-	}
-	
-	var totalHeight = cookData(data, 20);
-
-	
 	// URL logic
 	var firstColor = 1253;
 	function getUrl(num, ext) {
@@ -136,11 +73,6 @@ $(function() {
 	
 	
 	/* flytable config */
-	table.scrollPadding = 300;
-
-	table.getTotalHeight = function() {
-		return totalHeight;
-	};
 	
 	function getData(index) {
 		for(var i = 0; i < data.length; i++) {
@@ -283,13 +215,15 @@ $(function() {
 		});
 	}
 	
-	// pre-render ensures the page has correct vertical space usage
-	table.render();
 	jumpToHash();
 	
 	$("#moreLink").attr("href", getUrl(data.last, ".htm"));
 
-});
+	return {
+		table: table,
+		data: data
+	};
+};
 
 </script>
 
