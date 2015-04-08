@@ -16,14 +16,14 @@ function SetupSpeedreader() {
 
 	/* comic dimension data */
 	var data = [
-		{i: 1, h: 242, ext: ".gif"},
+		{i: 1, h: 242, prefix: "fv", ext: ".gif"},
 		{i: 700, h: 492},
 		{i: 701, h: 242},
 		{i: 710, h: 492},
 		{i: 711, h: 242},
 		{i: 1072, h: 492},
 		{i: 1073, h: 242},
-		{i: 1253, ext: ".png"},
+		{i: 1253, prefix: "fc", ext: ".png"},
 		{i: 1401, ext: ".jpg"},
 		{i: 1402, ext: ".png"},
 		{i: 1492, h: 489},
@@ -39,24 +39,19 @@ function SetupSpeedreader() {
 	];
 	
 	// URL logic
-	var firstColor = 1253;
 	function fixedLen(num,len){
 		return("0000000000000000"+num).slice(-len);
 	};
-	function getUrl(num, ext) {
+	function getUrl(num, prefix, ext) {
 		var bin = ((~~((num - 1) / 100)) * 100) + 100;
 		var padNum = fixedLen(num, 5);
 		
-		if(num >= firstColor) {
-			return "http://freefall.purrsia.com/ff"+bin+"/fc"+padNum+ext;
-		} else {
-			return "http://freefall.purrsia.com/ff"+bin+"/fv"+padNum+ext;
-		}
+		return "http://freefall.purrsia.com/ff"+bin+"/"+prefix+padNum+ext;
 	};
 	
 	function render(node, index, record) {
-		var imgUrl = getUrl(index, record.ext);
-		var pageUrl = getUrl(index, ".htm");
+		var imgUrl = getUrl(index, record.prefix, record.ext);
+		var pageUrl = getUrl(index, record.prefix, ".htm");
 		node.find(".num").text(index).attr("href", pageUrl);
 		node.find("img").attr("src", imgUrl);
 	};
@@ -89,14 +84,14 @@ body {
 .tmpl {
 	display: none;
 }
+
+/* comic instance CSS */
 .comic {
 	width: 1100px;
 }
 .comic .bg {
 	position: absolute;
 	display: block;
-	/*background: #eee;*/
-	border-radius: 32px;
 	top: 0; left: 0; right: 0; bottom: 0;
 }
 .comic .num {
@@ -111,6 +106,8 @@ body {
 	top: 0; left: 32px;
 	z-index: 0;
 }
+
+/* message CSS */
 .block {
 	margin-left: 32px;
 	padding: 16px;
@@ -136,6 +133,8 @@ body {
 	
 	font-size: 24px;
 }
+
+/* Bookmark CSS */
 #bookmarkBox {
 	display: none;
 	position: fixed;
@@ -148,7 +147,6 @@ body {
 }
 #bookmarkBox .entry {
 	display: block;
-	/*border-bottom: groove 3px #00f;*/
 }
 #bookmarkBox a, #bookmarkBox hr {
 	color: #00f;
