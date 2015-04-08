@@ -118,6 +118,23 @@ $(function() {
 	
 	/* Setup Bookmarking */
 	
+	function getBookmarks() {
+		return JSON.parse(localStorage[config.bookmarkKey] || "[]");
+	};
+	function updateBookmarkList(marks) {
+		config.bookmarkList.empty();
+		$.each(getBookmarks(), function(i) {
+			var entry = config.bookmarkTmpl.clone();
+			entry.find(".link").attr("href", this.url).text(this.text);
+			entry.find(".deleteMark").attr("data-index", i);
+			config.bookmarkList.append(entry);
+		});
+	};
+	function saveBookmarks(marks) {
+		localStorage[config.bookmarkKey] = JSON.stringify(marks);
+		updateBookmarkList(marks);
+	};
+	
 	/* Setup Events */
 	$(document).on("scroll", function() {
 		updateHash();
@@ -127,13 +144,39 @@ $(function() {
 		jumpToHash()
 		table.render();
 	});
-	if(window.addEventListener) {
-		// can't catch this event with jQuery, somehow
-		window.addEventListener("storage", function(e) {
-			if(e.key == BOOKMARK_KEY) {
-				updateBookmarkList();
-			}
+	
+	if(config.bookmarkBox && config.bookmarkList
+	&& config.bookmarkTmpl && config.bookmarkKey) {
+		
+		if(window.addEventListener) {
+			// can't catch this event with jQuery, somehow
+			window.addEventListener("storage", function(e) {
+				if(e.key == config.bookmarkKey) {
+					updateBookmarkList();
+				}
+			});
+		}
+		
+		$(config.bookmarkBox).on("click", ".markPlace", function() {
+			var comicNum = currentComic();
+			var list = getBookmarks();
+			list.push({
+				text: "#"+comicNum,
+				url: "#"+comicNum
+			});
+			saveBookmarks(list);
 		});
+		$(config.bookmarkBox).on("click", ".deleteMark", function() {
+			var index = 1 * $(this).attr("data-index");
+			var list = getBookmarks();
+			list.splice(index, 1);
+			saveBookmarks(list);
+		});
+
+		if(window.JSON && window.localStorage) {
+			config.bookmarkBox.show();
+			updateBookmarkList();
+		}
 	}
 	
 	/* Kickoff */

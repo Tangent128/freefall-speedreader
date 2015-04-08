@@ -14,10 +14,6 @@
 
 function SetupSpeedreader() {
 
-	var BOOKMARK_KEY = "/comics/freefall/bookmarks/list";
-	var $bookmarkTmpl = $(".tmpl .entry");
-	var $bookmarkList = $("#bookmarkList");
-
 	var container = $("#contain");
 	var table = setupFlyTable(container);
 	window.DebugTable = table;
@@ -125,53 +121,19 @@ function SetupSpeedreader() {
 		
 		return node;
 	};
-	
-	/* support for marking & deleting local bookmarks */
-	
-	function getBookmarks() {
-		return JSON.parse(localStorage[BOOKMARK_KEY] || "[]");
-	};
-	function updateBookmarkList(marks) {
-		$bookmarkList.empty();
-		$.each(getBookmarks(), function(i) {
-			var entry = $bookmarkTmpl.clone();
-			entry.find(".link").attr("href", this.url).text(this.text);
-			entry.find(".deleteMark").attr("data-index", i);
-			$bookmarkList.append(entry);
-		});
-	};
-	function saveBookmarks(marks) {
-		localStorage[BOOKMARK_KEY] = JSON.stringify(marks);
-		updateBookmarkList(marks);
-	};
-	
-	$(document).on("click", "#bookmarkBox .markPlace", function() {
-		var comicNum = currentComic();
-		var list = getBookmarks();
-		list.push({
-			text: "#"+comicNum,
-			url: "#"+comicNum
-		});
-		saveBookmarks(list);
-	});
-	$(document).on("click", "#bookmarkBox .deleteMark", function() {
-		var index = 1 * $(this).attr("data-index");
-		var list = getBookmarks();
-		list.splice(index, 1);
-		saveBookmarks(list);
-	});
 
-	if(window.JSON && window.localStorage) {
-		$("#bookmarkBox").show();
-		updateBookmarkList();
-	}
 
 	$("#moreLink").attr("href", getUrl(data.last, ".htm"));
 
 	return {
 		table: table,
 		data: data,
-		comicContainer: $("#contain")
+		comicContainer: $("#contain"),
+		
+		bookmarkKey: "/comics/freefall/bookmarks/list",
+		bookmarkTmpl: $(".tmpl .entry"),
+		bookmarkBox: $("#bookmarkBox"),
+		bookmarkList: $("#bookmarkList")
 	};
 };
 
