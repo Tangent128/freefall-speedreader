@@ -116,15 +116,18 @@ $(function() {
 		return totalHeight;
 	};
 	
-	function getData(index) {
-		for(var i = 0; i < data.length; i++) {
+	function search(start, end, fieldStart, fieldEnd, value) {
+		for(var i = start; i < end; i++) {
 			var item = data[i];
 			
-			if(index >= item.i && index < item.last) {
+			if(value >= item[fieldStart] && value < item[fieldEnd]) {
 				return item;
 			}
 		}
 		return false; // failure, just crash
+	};
+	function getData(index) {
+		return search(0, data.length, "i", "last", index);
 	};
 	table.getItemTop = function(index) {
 		var entry = getData(index);
@@ -140,23 +143,21 @@ $(function() {
 	};
 
 	table.pixelToIndex = function(y) {
-		for(var i = 0; i < data.length; i++) {
-			var item = data[i];
-			
-			if(y >= item.y && y < item.lastY) {
-				var offset = y - item.y;
-				
-				var indexOffset = ~~(offset / item.h);
-				
-				return item.i + indexOffset;
-			}
-		}
-		
 		if(y <= 0) {
 			return 0;
+		}
+		
+		var item = search(0, data.length, "y", "lastY", y);
+		if(item) {
+			var offset = y - item.y;
+			var indexOffset = ~~(offset / item.h);
+			
+			return item.i + indexOffset;
+			
 		} else {
 			return data.last;
 		}
+		
 	}
 
 	table.getComponent = function(comicNum, node) {
