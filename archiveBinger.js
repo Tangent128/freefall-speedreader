@@ -46,6 +46,24 @@ $(function() {
 	data.last = 0;
 	var totalHeight = 0;
 	
+	var initialLoad = true;
+	function updateData(config) {
+		data = config.data;
+		totalHeight = cookData(config.data, config.rowPadding);
+		
+		// pre-render ensures the page has correct vertical space usage
+		table.render();
+		
+		if(initialLoad) {
+			jumpToHash();
+			initialLoad = false;
+		}
+		
+		if(config.onSetup) {
+			config.onSetup();
+		}
+	}
+	
 	/**
 	 * process data array into form easy for flytable code to process:
 	 * - calculate index and y-axis extents to determine when search has found right record
@@ -104,9 +122,6 @@ $(function() {
 		
 		return totalHeight;
 	};
-	
-	/*var data = config.data;
-	var totalHeight = cookData(config.data, config.rowPadding);*/
 	
 	
 	/* Setup Flytable */
@@ -284,14 +299,7 @@ $(function() {
 	}
 	
 	/* Kickoff */
-
-	// pre-render ensures the page has correct vertical space usage
-	table.render();
-	jumpToHash();
-	
-	if(config.onSetup) {
-		config.onSetup();
-	}
+	updateData(config);
 	
 });
 
