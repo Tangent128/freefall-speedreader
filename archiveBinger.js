@@ -42,6 +42,10 @@ $(function() {
 	
 	/* Process Data */
 	
+	var data = [{i: 0, h: 0, y: 0, last: 1, lastY: 1}];
+	data.last = 0;
+	var totalHeight = 0;
+	
 	/**
 	 * process data array into form easy for flytable code to process:
 	 * - calculate index and y-axis extents to determine when search has found right record
@@ -101,8 +105,8 @@ $(function() {
 		return totalHeight;
 	};
 	
-	var data = config.data;
-	var totalHeight = cookData(config.data, config.rowPadding);
+	/*var data = config.data;
+	var totalHeight = cookData(config.data, config.rowPadding);*/
 	
 	
 	/* Setup Flytable */
@@ -118,12 +122,6 @@ $(function() {
 	
 	function search(start, end, fieldStart, fieldEnd, value) {
 		
-		if(start == end) {
-			// only one option left, if this isn't it,
-			// it's at least the closest
-			return data[start];
-		}
-		
 		var midIndex = (start + end)>>1;
 		var midItem = data[midIndex];
 		
@@ -131,14 +129,17 @@ $(function() {
 		var midMinus = (value < midItem[fieldEnd]);
 		
 		if(midPlus && midMinus) {
+			// found target
 			return midItem;
-		} else if(midPlus) {
+		} else if(midPlus && (midIndex + 1) < end) {
+			// search items above midpoint
 			return search(midIndex + 1, end, fieldStart, fieldEnd, value);
-		} else if(midMinus) {
+		} else if(midMinus && start < midIndex) {
+			// search items below midpoint
 			return search(start, midIndex, fieldStart, fieldEnd, value);
 		} else {
-			console.log("Illogical state during search for", start, end, fieldStart, fieldEnd, value);
-			return false;
+			// nowhere left to search, this must be the closest we can get
+			return midItem;
 		}
 	};
 	function getData(index) {
