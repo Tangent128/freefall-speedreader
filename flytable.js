@@ -110,7 +110,7 @@ function setupFlyTable(element) {
 		return false;
 	}
 	
-	// util, limit an event handler to only run every 20ms
+	// util, limit an event handler to only run every 40ms
 	function burnout(func) {
 		var burnedOut = false;
 		return function(evt) {
@@ -118,7 +118,7 @@ function setupFlyTable(element) {
 				return;
 			}
 			burnedOut = true;
-			window.setTimeout(function() {burnedOut = false;}, 20);
+			window.setTimeout(function() {burnedOut = false;}, 40);
 			return func.apply(this, evt);
 		}
 	}
@@ -177,7 +177,7 @@ function setupFlyTable(element) {
 		var tableY = this.container.offset().top;
 		var delta = screenY - tableY;
 		renderSlice(table, delta, delta + $(window).height());
-	}
+	};
 	
 	// utility for displaying datasets of uniform row height
 	// renderFunc(index of item, jQuery-wrapped node to render to)

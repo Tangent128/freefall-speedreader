@@ -47,9 +47,10 @@ $(function() {
 	var totalHeight = 0;
 	
 	var initialLoad = true;
-	function updateData(config) {
-		data = config.data;
-		totalHeight = cookData(config.data, config.rowPadding);
+	function processUpdate(newConfig, newData) {
+		config = newConfig;
+		data = newData;
+		totalHeight = cookData(data, config.rowPadding);
 		
 		// pre-render ensures the page has correct vertical space usage
 		table.render();
@@ -61,6 +62,16 @@ $(function() {
 		
 		if(config.onSetup) {
 			config.onSetup();
+		}
+	}
+	function updateData(config) {
+		if(config.data) {
+			processUpdate(config, config.data);
+		}
+		if(config.dataPromise) {
+			config.dataPromise.then(function(data) {
+				processUpdate(config, data);
+			});
 		}
 	}
 	
@@ -255,9 +266,14 @@ $(function() {
 	
 	/* Setup Events */
 	
-	$(document).on("scroll", function() {
-		updateHash();
-		table.render();
+	var lastY = 0;
+	$(document).on("scroll", function(evt) {
+		var scrollY = window.scrollY;
+		if(Math.abs(scrollY - lastY) > 50) {
+			updateHash();
+			table.render();
+			lastY = scrollY;
+		}
 	});
 	$(window).on("hashchange", function() {
 		jumpToHash()
