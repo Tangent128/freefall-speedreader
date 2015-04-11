@@ -159,7 +159,7 @@ $(function() {
 
 	table.pixelToIndex = function(y) {
 		if(y <= 0) {
-			return 0;
+			return data[0].i;
 		}
 		
 		var item = search(0, data.length, "y", "lastY", y);
