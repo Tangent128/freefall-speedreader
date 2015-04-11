@@ -117,14 +117,29 @@ $(function() {
 	};
 	
 	function search(start, end, fieldStart, fieldEnd, value) {
-		for(var i = start; i < end; i++) {
-			var item = data[i];
-			
-			if(value >= item[fieldStart] && value < item[fieldEnd]) {
-				return item;
-			}
+		
+		if(start == end) {
+			// only one option left, if this isn't it,
+			// it's at least the closest
+			return data[start];
 		}
-		return false; // failure, just crash
+		
+		var midIndex = (start + end)>>1;
+		var midItem = data[midIndex];
+		
+		var midPlus = (midItem[fieldStart] <= value);
+		var midMinus = (value < midItem[fieldEnd]);
+		
+		if(midPlus && midMinus) {
+			return midItem;
+		} else if(midPlus) {
+			return search(midIndex + 1, end, fieldStart, fieldEnd, value);
+		} else if(midMinus) {
+			return search(start, midIndex, fieldStart, fieldEnd, value);
+		} else {
+			console.log("Illogical state during search for", start, end, fieldStart, fieldEnd, value);
+			return false;
+		}
 	};
 	function getData(index) {
 		return search(0, data.length, "i", "last", index);
