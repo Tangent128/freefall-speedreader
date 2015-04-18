@@ -14,30 +14,6 @@
 
 function SetupSpeedreader(Utility) {
 
-	/* comic dimension data */
-	var data = [
-		{i: 1, h: 242, prefix: "fv", ext: ".gif"},
-		{i: 700, h: 492},
-		{i: 701, h: 242},
-		{i: 710, h: 492},
-		{i: 711, h: 242},
-		{i: 1072, h: 492},
-		{i: 1073, h: 242},
-		{i: 1253, prefix: "fc", ext: ".png"},
-		{i: 1401, ext: ".jpg"},
-		{i: 1402, ext: ".png"},
-		{i: 1492, h: 489},
-		{i: 1493, h: 242},
-		{i: 1496, h: 489},
-		{i: 1497, h: 242},
-		{i: 1700, h: 310},
-		{i: 1780, h: 629},
-		{i: 1781, h: 310},
-		{i: 2546, h: 334},
-		{i: 2547, h: 310},
-		{i: 2638}
-	];
-	
 	// URL logic
 	function getUrl(num, prefix, ext) {
 		var bin = ((~~((num - 1) / 100)) * 100) + 100;
@@ -46,6 +22,7 @@ function SetupSpeedreader(Utility) {
 		return "http://freefall.purrsia.com/ff"+bin+"/"+prefix+padNum+ext;
 	};
 	
+	// comic row layout
 	function render(node, index, record) {
 		var imgUrl = getUrl(index, record.prefix, record.ext);
 		var pageUrl = getUrl(index, record.prefix, ".htm");
@@ -53,8 +30,14 @@ function SetupSpeedreader(Utility) {
 		node.find("img").attr("src", imgUrl);
 	};
 
+	// configuration
 	return {
-		data: data,
+		// comic dimension data in external file now
+		dataPromise: $.ajax({
+			url:"freefallData.js",
+			dataType: "jsonp",
+			jsonpCallback:"FreefallData"
+		}),
 		comicContainer: $("#contain"),
 		comicTmpl: $(".tmpl .comic"),
 		render: render,
