@@ -30,7 +30,7 @@ $(function() {
 	var empty = $([]);
 	config = $.extend({
 		/* required:
-		data
+		data | dataPromise
 		comicContainer
 		comicTmpl
 		render(comicDiv, index#, metadataRecord)
