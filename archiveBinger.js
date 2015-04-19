@@ -25,20 +25,20 @@ $(function() {
 	};
 	
 	/* Get Config */
-	var config = SetupSpeedreader(Utility);
-	
-	var empty = $([]);
-	config = $.extend({
-		/* required:
-		data | dataPromise
-		comicContainer
-		comicTmpl
-		render(comicDiv, index#, metadataRecord)
-		*/
-		rowPadding: 20,
-		scrollPadding: 300
-	}, config);
-	
+	function refreshConfig() {
+		var loadedConfig = SetupSpeedreader(Utility);
+		return $.extend({
+			/* required:
+			data | dataPromise
+			comicContainer
+			comicTmpl
+			render(comicDiv, index#, metadataRecord)
+			*/
+			rowPadding: 20,
+			scrollPadding: 300
+		}, loadedConfig);
+	};
+	var config = refreshConfig();
 	
 	/* Process Data */
 	
@@ -61,7 +61,14 @@ $(function() {
 		}
 		
 		if(config.onSetup) {
-			config.onSetup();
+			config.onSetup(data);
+		}
+		
+		if(config.refreshInterval) {
+			window.setTimeout(function() {
+				var refreshedConfig = refreshConfig();
+				updateData(refreshedConfig);
+			}, config.refreshInterval);
 		}
 	}
 	function updateData(config) {

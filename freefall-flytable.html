@@ -35,6 +35,7 @@ function SetupSpeedreader(Utility) {
 		// comic dimension data in external file now
 		dataPromise: $.ajax({
 			url:"freefallData.js",
+			crossDomain: true,
 			dataType: "jsonp",
 			jsonpCallback:"FreefallData"
 		}),
@@ -42,9 +43,12 @@ function SetupSpeedreader(Utility) {
 		comicTmpl: $(".tmpl .comic"),
 		render: render,
 		
-		onSetup: function() {
+		onSetup: function(data) {
 			$("#moreLink").attr("href", getUrl(data.last, "fc", ".htm"));
 		},
+		
+		// update in 40-80 minutes
+		refreshInterval: (40*60*1000) * (1 + Math.random()),
 		
 		bookmarkKey: "/comics/freefall/bookmarks/list",
 		bookmarkTmpl: $(".tmpl .entry"),
