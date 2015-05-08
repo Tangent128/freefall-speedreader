@@ -34,7 +34,7 @@ function SetupSpeedreader(Utility) {
 	return {
 		// comic dimension data in external file now
 		dataPromise: $.ajax({
-			url:"freefallData.js",
+			url:"http://freefall.purrsia.com/fabsdata.js",
 			crossDomain: true,
 			dataType: "jsonp",
 			jsonpCallback:"FreefallData"
@@ -44,7 +44,7 @@ function SetupSpeedreader(Utility) {
 		render: render,
 		
 		onSetup: function(data) {
-			$("#moreLink").attr("href", getUrl(data.last, "fc", ".htm"));
+			$("#moreLink").attr("href", getUrl(data.last - 1, "fc", ".htm"));
 		},
 		
 		// update in 40-80 minutes
@@ -162,7 +162,7 @@ so your browser doesn't have to download everything at once.</p>
 
 <div class="comic">
 <div class="block moreBlock">
-Continue reading at <a id="moreLink">the proper archives</a>
+Continue to <a id="moreLink">the latest archive page</a>, or <a href="http://freefall.purrsia.com/">the comic front page</a>.
 </div>
 </div>
 
