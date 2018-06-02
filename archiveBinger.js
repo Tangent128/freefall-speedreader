@@ -209,10 +209,8 @@ $(function() {
 		
 	}
 
-	table.getComponent = function(comicNum, node) {
-		if(!node) {
-			node = config.comicTmpl.clone();
-		}
+	table.getComponent = function(comicNum) {
+		var node = config.comicTmpl.clone();
 		config.render(node, comicNum, getData(comicNum));
 		
 		return node;

@@ -18,7 +18,6 @@ function setupFlyTable(element) {
 	
 	var table = {};
 	table.container = element;
-	table.recycle = [];
 	table.inUse = [];
 	table.sliceStart = 1/0;
 	table.sliceEnd = -1;
@@ -30,15 +29,9 @@ function setupFlyTable(element) {
 	
 	table.recalculate = function() {};
 	
-	table.getComponent = function(index, recycle) {
-		if(!recycle) {
-			recycle = $("<s>no renderer</s>");
-		}
-		
-		return recycle;
+	table.getComponent = function(index) {
+		return $("<s>no renderer</s>");
 	}
-	
-	table.recycleComponent = function(element) {};
 	
 	table.getItemTop = function(index) {
 		return this.getItemHeight(0)*index; // arbitrary value
@@ -58,10 +51,9 @@ function setupFlyTable(element) {
 
 	/* Internal Functions */
 	
-	function recycleOffscreenNodes(table, startY, endY) {
+	function destroyOffscreenNodes(table, startY, endY) {
 		var container = table.container;
 		var inUse = table.inUse;
-		var recycle = table.recycle;
 		var stillInUse = [];
 		
 		var firstVisible = table.pixelToIndex(startY);
@@ -72,8 +64,6 @@ function setupFlyTable(element) {
 			var index = element.data("flytable-index");
 			
 			if(index < firstVisible || index > lastVisible) {
-				recycle.push(element);
-				table.recycleComponent(element);
 				element.remove();
 			} else {
 				stillInUse.push(element);
@@ -84,31 +74,11 @@ function setupFlyTable(element) {
 		table.sliceStart = Math.max(firstVisible, table.sliceStart);
 		table.sliceEnd = Math.min(table.sliceEnd, lastVisible);
 	}
-	function recycleAllNodes(table) {
-		var inUse = table.inUse;
-		var recycle = table.recycle;
-		
-		for(var i = 0; i < inUse.length; i++) {
-			recycle.push(inUse[i]);
-		}
-		table.container.empty();
-		
-		table.inUse = [];
-		table.sliceStart = 1/0;
-		table.sliceEnd = -1;
-	}
 	
 	function includeInSlice(table, index) {
 		table.sliceStart = Math.min(index, table.sliceStart);
 		table.sliceEnd = Math.max(table.sliceEnd, index);
 	};
-
-	function grabNode() {
-		if(table.recycle.length > 0) {
-			return table.recycle.pop();
-		}
-		return false;
-	}
 	
 	// util, limit an event handler to only run every 40ms
 	function burnout(func) {
@@ -139,7 +109,7 @@ function setupFlyTable(element) {
 		var endY = Math.min(endY + table.scrollPadding, height)
 		
 		// clear offscreen nodes
-		recycleOffscreenNodes(table, startY, endY);
+		destroyOffscreenNodes(table, startY, endY);
 
 		// loop through visible blocks
 		var index = table.pixelToIndex(startY);
@@ -150,7 +120,7 @@ function setupFlyTable(element) {
 			var h = table.getItemHeight(index);
 
 			if(index < existingSliceStart || index > existingSliceEnd) {
-				var element = table.getComponent(index, grabNode());
+				var element = table.getComponent(index);
 				element.css({
 					position: "absolute",
 					left: "0",
@@ -190,10 +160,8 @@ function setupFlyTable(element) {
 			rowHeight = tmpl.height();
 		}
 		
-		this.getComponent = function(index, node) {
-			if(!node) {
-				node = tmpl.clone();
-			}
+		this.getComponent = function(index) {
+			var node = tmpl.clone();
 		
 			renderFunc(index, node);
 			
