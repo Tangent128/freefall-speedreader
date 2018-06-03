@@ -63,13 +63,6 @@ $(function() {
 		if(config.onSetup) {
 			config.onSetup(data);
 		}
-		
-		if(config.refreshInterval) {
-			window.setTimeout(function() {
-				var refreshedConfig = refreshConfig();
-				updateData(refreshedConfig);
-			}, config.refreshInterval);
-		}
 	}
 	function updateData(config) {
 		if(config.data) {
