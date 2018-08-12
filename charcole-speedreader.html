@@ -375,11 +375,12 @@ function SetupSpeedreader(Utility) {
 
 	// comic row layout
 	function render(node, index, record) {
-		//var imgUrl = getUrl(index, record.prefix, record.ext);
-		//var pageUrl = getUrl(index, record.prefix, ".htm");
-		//node.find(".num").text(index).attr("href", pageUrl);
-		node.find(".num").text(record.f);
-		//node.find("img").attr("src", imgUrl);
+		node.find(".num").text(record.i);
+		node.find("img")
+			.attr("width", record.w)
+			.attr("height", record.h)
+			.attr("src", "http:"+record.f)
+		;
 	};
 
 	// configuration
