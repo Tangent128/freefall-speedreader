@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <title>Charcole Archive Binge Speedreader</title>
+<meta name="viewport" content="width=900" />
 <script src="jquery-1.11.0.min.js"></script>
 <script src="flytable.js"></script>
 <script src="archiveBinger.js"></script>
@@ -417,8 +418,11 @@ function SetupSpeedreader(Utility) {
 <style>
 body {
 	color: #000;
-	background: #e8e8e8;
+	background: #ffffc6;
 	font-size: 16px;
+	margin: 0 auto;
+	width: 900px;
+	padding: 0;
 }
 .tmpl {
 	display: none;
@@ -426,50 +430,32 @@ body {
 
 /* comic instance CSS */
 .comic {
-	width: 1100px;
-}
-.comic .bg {
 	position: absolute;
-	display: block;
-	top: 0; left: 0; right: 0; bottom: 0;
-}
-.comic .num {
-	position: absolute;
-	top: 0; right: 32px;
-	font-weight: bold;
-	padding: 3px;
-	z-index: 1;
+	width: 900px;
 }
 .comic img {
 	position: absolute;
-	top: 0; left: 32px;
+	top: 0; left: 0px;
 	z-index: 0;
 }
 
 /* message CSS */
 .block {
-	margin-left: 32px;
+	margin: 0px;
 	padding: 16px;
+	width: 900px;
 
-	background: #ffc;
+	border: 0px solid #f00;
 }
-.headBlock {
-	border: 2px solid black;
-	width: calc(768px - (16px + 2px) * 2);
-	margin-bottom: 20px;
-}
-.headBlock h1 {
-	margin: 0;
+.block h1 {
+	margin: 0px;
+	color: #f00;
+	text-shadow: #ff0 2px 2px 1px, #ff0 -2px 2px 1px, #ff0 2px -2px 1px, #ff0 -2px -2px 1px;
 }
 .small {
 	font-size: 12px;
 }
 .moreBlock {
-	border: 3px solid black;
-	width: calc(982px - (16px + 3px) * 2);
-
-	background: #0dc8b0;
-	
 	font-size: 24px;
 }
 
@@ -481,18 +467,18 @@ body {
 	bottom: 1em;
 	
 	border: solid thin #f00;
-	
-	background: #fff;
+	background: #f90;
 }
 #bookmarkBox .entry {
 	display: block;
 }
 #bookmarkBox a, #bookmarkBox hr {
-	color: #00f;
+	color: #fff;
 }
 #bookmarkBox hr {
 	clear: both;
 	margin: 0px;
+	border: solid thin #f00;
 }
 #bookmarkBox .deleteMark {
 	color: #f00;
@@ -517,6 +503,7 @@ so your browser doesn't have to download everything at once.</p>
 
 <div class="comic">
 <div class="block moreBlock">
+	<a href="http://charcole.kyrio.net/">Main Site</a>
 </div>
 </div>
 
@@ -530,11 +517,7 @@ so your browser doesn't have to download everything at once.</p>
 
 <div class="tmpl">
 	<div class="comic">
-		<div class="bg">
-			<span class="dbg"></span>
-			<a class="num"></a>
-			<img />
-		</div>
+		<img />
 	</div>
 	<div class="entry">
 		<a class="link"></a>
