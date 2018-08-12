@@ -1,4 +1,18 @@
-[
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<title>Charcole Archive Binge Speedreader</title>
+<script src="jquery-1.11.0.min.js"></script>
+<script src="flytable.js"></script>
+<script src="archiveBinger.js"></script>
+
+<script>
+
+/* Speedreader, archiveBinger.js, and flytable.js coded by tangent128 */
+/* https://github.com/Tangent128 */
+
+var COMICS = [
 {"i":1, "f":"//charcole.kyrio.net/wp-content/uploads/2009/12/2009-06-16_CharCole1.png","w":900,"h":206},
 {"i":2, "f":"//charcole.kyrio.net/wp-content/uploads/2009/12/2009-06-17_CharCole2.png","w":900,"h":194},
 {"i":3, "f":"//charcole.kyrio.net/wp-content/uploads/2009/12/2009-06-18_CharCole3.png","w":900,"h":206},
@@ -355,3 +369,168 @@
 {"i":355, "f":"//charcole.kyrio.net/wp-content/uploads/2018/05/CC355.png","w":1496,"h":1974},
 {"i":356, "f":"//charcole.kyrio.net/wp-content/uploads/2018/06/CC356.png","w":2992,"h":3948}
 ]
+;
+
+function SetupSpeedreader(Utility) {
+
+	// comic row layout
+	function render(node, index, record) {
+		//var imgUrl = getUrl(index, record.prefix, record.ext);
+		//var pageUrl = getUrl(index, record.prefix, ".htm");
+		//node.find(".num").text(index).attr("href", pageUrl);
+		node.find(".num").text(record.f);
+		//node.find("img").attr("src", imgUrl);
+	};
+
+	// configuration
+	return {
+		data: COMICS,
+		comicContainer: $("#contain"),
+		comicTmpl: $(".tmpl .comic"),
+		render: render,
+		
+		onSetup: function(data) {
+			//$("#moreLink").attr("href", getUrl(data.last - 1, "fc", ".htm"));
+		},
+		
+		bookmarkKey: "/comics/charcole/bookmarks/list",
+		bookmarkTmpl: $(".tmpl .entry"),
+		bookmarkBox: $("#bookmarkBox"),
+		bookmarkList: $("#bookmarkList")
+	};
+};
+
+</script>
+
+<style>
+body {
+	color: #000;
+	background: #e8e8e8;
+	font-size: 16px;
+}
+.tmpl {
+	display: none;
+}
+
+/* comic instance CSS */
+.comic {
+	width: 1100px;
+}
+.comic .bg {
+	position: absolute;
+	display: block;
+	top: 0; left: 0; right: 0; bottom: 0;
+}
+.comic .num {
+	position: absolute;
+	top: 0; right: 32px;
+	font-weight: bold;
+	padding: 3px;
+	z-index: 1;
+}
+.comic img {
+	position: absolute;
+	top: 0; left: 32px;
+	z-index: 0;
+}
+
+/* message CSS */
+.block {
+	margin-left: 32px;
+	padding: 16px;
+
+	background: #ffc;
+}
+.headBlock {
+	border: 2px solid black;
+	width: calc(768px - (16px + 2px) * 2);
+	margin-bottom: 20px;
+}
+.headBlock h1 {
+	margin: 0;
+}
+.small {
+	font-size: 12px;
+}
+.moreBlock {
+	border: 3px solid black;
+	width: calc(982px - (16px + 3px) * 2);
+
+	background: #0dc8b0;
+	
+	font-size: 24px;
+}
+
+/* Bookmark CSS */
+#bookmarkBox {
+	display: none;
+	position: fixed;
+	right: 1em;
+	bottom: 1em;
+	
+	border: solid thin #f00;
+	
+	background: #fff;
+}
+#bookmarkBox .entry {
+	display: block;
+}
+#bookmarkBox a, #bookmarkBox hr {
+	color: #00f;
+}
+#bookmarkBox hr {
+	clear: both;
+	margin: 0px;
+}
+#bookmarkBox .deleteMark {
+	color: #f00;
+	cursor: pointer;
+	float: right;
+	margin-bottom: 5px;
+	margin-right: 3px;
+}
+</style>
+</head>
+<body>
+
+<div class="block headBlock">
+<h1>Charcole Speedreader</h1>
+<p>This tool allows reading Charcole in a continuous format, uninterrupted
+by page loads. It will automatically load comics as they scroll onscreen,
+so your browser doesn't have to download everything at once.</p>
+
+</div>
+
+<div id="contain"></div>
+
+<div class="comic">
+<div class="block moreBlock">
+</div>
+</div>
+
+<div id="bookmarkBox">
+	<div id="bookmarkList">
+	</div>
+	<div class="entry">
+		<button class="markPlace">Save Spot</button>
+	</div>
+</div>
+
+<div class="tmpl">
+	<div class="comic">
+		<div class="bg">
+			<span class="dbg"></span>
+			<a class="num"></a>
+			<img />
+		</div>
+	</div>
+	<div class="entry">
+		<a class="link"></a>
+		<a class="deleteMark">x</a>
+		<hr />
+	</div>
+</div>
+
+</body>
+</html>
+
