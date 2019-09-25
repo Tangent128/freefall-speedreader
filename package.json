@@ -3,7 +3,8 @@
   "version": "2.0.0",
   "description": "",
   "scripts": {
-    "build": "parcel build flytable.ts archiveBinger.ts",
+    "build": "tsc --outDir dist/",
+    "build:parcel": "parcel build flytable.ts archiveBinger.ts --no-minify",
     "lint": "tsc --noEmit"
   },
   "repository": {
@@ -18,7 +19,6 @@
   "homepage": "https://github.com/Tangent128/freefall-speedreader#readme",
   "devDependencies": {
     "@types/jquery": "1.10",
-    "parcel-bundler": "^1.12",
     "typescript": "^3.6.3"
   }
 }
