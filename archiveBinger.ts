@@ -35,10 +35,10 @@ type MetadataEntry = {
 };
 
 type SpeedreaderConfig<T> = {
-  bookmarkBox: JQuery;
-  bookmarkKey: string;
-  bookmarkList: JQuery;
-  bookmarkTmpl: JQuery;
+  bookmarkBox?: JQuery;
+  bookmarkKey?: string;
+  bookmarkList?: JQuery;
+  bookmarkTmpl?: JQuery;
   comicContainer: JQuery;
   comicTmpl: JQuery;
   onSetup: (data: T[]) => void;
@@ -287,21 +287,28 @@ $(function<MetadataType extends MetadataEntry>() {
   /* Setup Bookmarking */
 
   function getBookmarks(): Bookmark[] {
-    return JSON.parse(localStorage[config.bookmarkKey] || "[]");
+    return JSON.parse(
+      (config.bookmarkKey && localStorage[config.bookmarkKey]) || "[]"
+    );
   }
   function updateBookmarkList() {
-    config.bookmarkList.empty();
+    if (!config.bookmarkList) return;
+    if (!config.bookmarkTmpl) return;
+    const bookmarkList = config.bookmarkList;
+    const bookmarkTmpl = config.bookmarkTmpl;
+    bookmarkList.empty();
     $.each(getBookmarks(), function(i, bookmark) {
-      const entry = config.bookmarkTmpl.clone();
+      const entry = bookmarkTmpl.clone();
       entry
         .find(".link")
         .attr("href", bookmark.url)
         .text(bookmark.text);
       entry.find(".deleteMark").attr("data-index", i);
-      config.bookmarkList.append(entry);
+      bookmarkList.append(entry);
     });
   }
   function saveBookmarks(marks: Bookmark[]) {
+    if (!config.bookmarkKey) return;
     localStorage[config.bookmarkKey] = JSON.stringify(marks);
     updateBookmarkList();
   }
