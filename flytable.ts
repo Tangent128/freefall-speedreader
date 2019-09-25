@@ -52,7 +52,6 @@ function setupFlyTable(element) {
 	/* Internal Functions */
 	
 	function destroyOffscreenNodes(table, startY, endY) {
-		var container = table.container;
 		var inUse = table.inUse;
 		var stillInUse = [];
 		
@@ -79,19 +78,6 @@ function setupFlyTable(element) {
 		table.sliceStart = Math.min(index, table.sliceStart);
 		table.sliceEnd = Math.max(table.sliceEnd, index);
 	};
-	
-	// util, limit an event handler to only run every 40ms
-	function burnout(func) {
-		var burnedOut = false;
-		return function(evt) {
-			if(burnedOut) {
-				return;
-			}
-			burnedOut = true;
-			window.setTimeout(function() {burnedOut = false;}, 40);
-			return func.apply(this, evt);
-		}
-	}
 	
 	function renderSlice(table, startY, endY) {
 		// prepare table element
