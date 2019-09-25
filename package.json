@@ -2,7 +2,10 @@
   "name": "speedreader",
   "version": "2.0.0",
   "description": "",
-  "scripts": {},
+  "scripts": {
+    "build": "parcel build flytable.ts archiveBinger.ts",
+    "lint": "tsc --noEmit"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Tangent128/freefall-speedreader.git"
