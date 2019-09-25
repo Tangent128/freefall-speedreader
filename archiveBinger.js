@@ -1,6 +1,6 @@
 /* ISC Licensed:
  * 
- * Copyright (c) 2015, Tangent128 
+ * Copyright (c) 2015-2018, Tangent128 
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -62,13 +62,6 @@ $(function() {
 		
 		if(config.onSetup) {
 			config.onSetup(data);
-		}
-		
-		if(config.refreshInterval) {
-			window.setTimeout(function() {
-				var refreshedConfig = refreshConfig();
-				updateData(refreshedConfig);
-			}, config.refreshInterval);
 		}
 	}
 	function updateData(config) {
@@ -209,10 +202,8 @@ $(function() {
 		
 	}
 
-	table.getComponent = function(comicNum, node) {
-		if(!node) {
-			node = config.comicTmpl.clone();
-		}
+	table.getComponent = function(comicNum) {
+		var node = config.comicTmpl.clone();
 		config.render(node, comicNum, getData(comicNum));
 		
 		return node;

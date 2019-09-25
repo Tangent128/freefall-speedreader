@@ -47,9 +47,6 @@ function SetupSpeedreader(Utility) {
 			$("#moreLink").attr("href", getUrl(data.last - 1, "fc", ".htm"));
 		},
 		
-		// update in 40-80 minutes
-		refreshInterval: (40*60*1000) * (1 + Math.random()),
-		
 		bookmarkKey: "/comics/freefall/bookmarks/list",
 		bookmarkTmpl: $(".tmpl .entry"),
 		bookmarkBox: $("#bookmarkBox"),
