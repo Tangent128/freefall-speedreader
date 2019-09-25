@@ -49,13 +49,12 @@ class Flytable {
 
   private destroyOffscreenNodes(startY: number, endY: number) {
     const inUse = this.inUse;
-    const stillInUse = [];
+    const stillInUse: JQuery[] = [];
 
     const firstVisible = this.pixelToIndex(startY);
     const lastVisible = this.pixelToIndex(endY);
 
-    for (let i = 0; i < inUse.length; i++) {
-      const element = inUse[i];
+    inUse.forEach(element => {
       const index = element.data("flytable-index");
 
       if (index < firstVisible || index > lastVisible) {
@@ -63,7 +62,7 @@ class Flytable {
       } else {
         stillInUse.push(element);
       }
-    }
+    });
 
     this.inUse = stillInUse;
     this.sliceStart = Math.max(firstVisible, this.sliceStart);

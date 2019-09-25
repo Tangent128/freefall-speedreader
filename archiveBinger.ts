@@ -140,16 +140,13 @@ $(function<MetadataType extends MetadataEntry>() {
       }
     }
 
-    for (let i = 0; i < array.length; i++) {
-      const item = array[i];
-
+    array.forEach(item => {
       // copy attributes forward
-      for (let a = 0; a < attributes.length; a++) {
-        const attr = attributes[a];
+      attributes.forEach(attr => {
         if (!(attr in item)) {
           item[attr] = prev[attr] as T[keyof T];
         }
-      }
+      });
 
       // copy height forward + ensure requested padding
       if (item.h) {
@@ -165,7 +162,7 @@ $(function<MetadataType extends MetadataEntry>() {
       prev.last = item.i;
       prev.lastY = item.y;
       prev = item;
-    }
+    });
 
     // last item needs to be given explicitly
     const lastEntry = array[array.length - 1];
@@ -292,12 +289,10 @@ $(function<MetadataType extends MetadataEntry>() {
     );
   }
   function updateBookmarkList() {
-    if (!config.bookmarkList) return;
-    if (!config.bookmarkTmpl) return;
-    const bookmarkList = config.bookmarkList;
-    const bookmarkTmpl = config.bookmarkTmpl;
+    const { bookmarkList, bookmarkTmpl } = config;
+    if (!(bookmarkList && bookmarkTmpl)) return;
     bookmarkList.empty();
-    $.each(getBookmarks(), function(i, bookmark) {
+    getBookmarks().forEach((bookmark, i) => {
       const entry = bookmarkTmpl.clone();
       entry
         .find(".link")
