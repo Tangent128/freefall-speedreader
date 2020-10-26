@@ -39,18 +39,12 @@ type SpeedreaderConfig<T> = {
   bookmarkTmpl?: JQuery;
   comicContainer: JQuery;
   comicTmpl: JQuery;
-  onSetup: (data: T[]) => void;
+  data: T[];
+  onSetup: (data: T[], lastEntry: T) => void;
   render: (comicDiv: JQuery, index: number, metadataRecord: T) => void;
   rowPadding: number;
   scrollPadding: number;
-} & (
-  | {
-      data: T[];
-    }
-  | {
-      dataPromise: JQueryPromise<T[]>;
-    }
-);
+};
 
 interface Bookmark {
   text: string;
@@ -65,10 +59,10 @@ function BootSpeedreader<MetadataType extends MetadataEntry>(
 ): void {
   /* Get Config */
   const loadedConfig = SetupSpeedreader(SpeedreaderUtility);
-  let config: SpeedreaderConfig<MetadataType> = $.extend(
+  const config: SpeedreaderConfig<MetadataType> = $.extend(
     {
       /* required:
-    data | dataPromise
+    data
     comicContainer
     comicTmpl
     render(comicDiv, index#, metadataRecord)
@@ -81,21 +75,12 @@ function BootSpeedreader<MetadataType extends MetadataEntry>(
 
   /* Process Data */
 
-  let data: MetadataType[] = [
-    { i: 0, h: 0, y: 0, last: 1, lastY: 1 } as MetadataType,
-  ];
+  const data: MetadataType[] = config.data;
   let last = 0;
-  let totalHeight = 0;
+  const totalHeight = cookData(data, config.rowPadding);
 
   let initialLoad = true;
-  function processUpdate(
-    newConfig: SpeedreaderConfig<MetadataType>,
-    newData: MetadataType[]
-  ) {
-    config = newConfig;
-    data = newData;
-    totalHeight = cookData(data, config.rowPadding);
-
+  function processUpdate() {
     // pre-render ensures the page has correct vertical space usage
     table.render();
 
@@ -105,17 +90,7 @@ function BootSpeedreader<MetadataType extends MetadataEntry>(
     }
 
     if (config.onSetup) {
-      config.onSetup(data);
-    }
-  }
-  function updateData(config: SpeedreaderConfig<MetadataType>) {
-    if ("data" in config) {
-      processUpdate(config, config.data);
-    }
-    if ("dataPromise" in config) {
-      config.dataPromise.then(function (data) {
-        processUpdate(config, data as MetadataType[]);
-      });
+      config.onSetup(data, data[data.length - 1]);
     }
   }
 
@@ -366,7 +341,7 @@ function BootSpeedreader<MetadataType extends MetadataEntry>(
   }
 
   /* Kickoff */
-  updateData(config);
+  processUpdate();
 }
 /*
  * See other stuff I've written at https://github.com/Tangent128/

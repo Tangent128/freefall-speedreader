@@ -154,48 +154,58 @@
       /* Speedreader, archiveBinger.js, and flytable.js coded by tangent128 */
       /* https://github.com/Tangent128 */
 
-      BootSpeedreader(function SetupSpeedreader(Utility) {
-        // URL logic
-        function getUrl(num, prefix, ext) {
-          var bin = ~~((num - 1) / 100) * 100 + 100;
-          var padNum = Utility.fixedLen(num, 5);
+      /**
+       * comic dimension data is in http://freefall.purrsia.com/fabsdata.js,
+       * which will call this with the appropriate data value
+       */
+      function FreefallData(data) {
+        BootSpeedreader(function SetupSpeedreader(Utility) {
+          // URL logic
+          function getUrl(num, prefix, ext) {
+            var bin = ~~((num - 1) / 100) * 100 + 100;
+            var padNum = Utility.fixedLen(num, 5);
 
-          return (
-            "http://freefall.purrsia.com/ff" + bin + "/" + prefix + padNum + ext
-          );
-        }
+            return (
+              "http://freefall.purrsia.com/ff" +
+              bin +
+              "/" +
+              prefix +
+              padNum +
+              ext
+            );
+          }
 
-        // comic row layout
-        function render(node, index, record) {
-          var imgUrl = getUrl(index, record.prefix, record.ext);
-          var pageUrl = getUrl(index, record.prefix, ".htm");
-          node.find(".num").text(index).attr("href", pageUrl);
-          node.find("img").attr("src", imgUrl);
-        }
+          // comic row layout
+          function render(node, index, record) {
+            var imgUrl = getUrl(index, record.prefix, record.ext);
+            var pageUrl = getUrl(index, record.prefix, ".htm");
+            node.find(".num").text(index).attr("href", pageUrl);
+            node.find("img").attr("src", imgUrl);
+          }
 
-        // configuration
-        return {
-          // comic dimension data in external file now
-          dataPromise: $.ajax({
-            url: "http://freefall.purrsia.com/fabsdata.js",
-            crossDomain: true,
-            dataType: "jsonp",
-            jsonpCallback: "FreefallData",
-          }),
-          comicContainer: $("#contain"),
-          comicTmpl: $(".tmpl .comic"),
-          render: render,
+          // configuration
+          return {
+            data: data,
+            comicContainer: $("#contain"),
+            comicTmpl: $(".tmpl .comic"),
+            render: render,
 
-          onSetup: function (data) {
-            $("#moreLink").attr("href", getUrl(data.last - 1, "fc", ".htm"));
-          },
+            onSetup: function (data, lastEntry) {
+              console.debug(data);
+              $("#moreLink").attr(
+                "href",
+                getUrl(lastEntry.last - 2, "fc", ".htm")
+              );
+            },
 
-          bookmarkKey: "/comics/freefall/bookmarks/list",
-          bookmarkTmpl: $(".tmpl .entry"),
-          bookmarkBox: $("#bookmarkBox"),
-          bookmarkList: $("#bookmarkList"),
-        };
-      });
+            bookmarkKey: "/comics/freefall/bookmarks/list",
+            bookmarkTmpl: $(".tmpl .entry"),
+            bookmarkBox: $("#bookmarkBox"),
+            bookmarkList: $("#bookmarkList"),
+          };
+        });
+      }
     </script>
+    <script src="http://freefall.purrsia.com/fabsdata.js"></script>
   </body>
 </html>
