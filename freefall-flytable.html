@@ -155,57 +155,50 @@
       /* https://github.com/Tangent128 */
 
       /**
-       * comic dimension data is in http://freefall.purrsia.com/fabsdata.js,
-       * which will call this with the appropriate data value
+       * comic dimension data is in http://freefall.purrsia.com/fabsdata.js ;
+       * we load that script after this one, and that script will call this function with the list of comic data.
        */
       function FreefallData(data) {
-        BootSpeedreader(function SetupSpeedreader() {
-          function fixedLen(num, len) {
-            return ("0000000000000000" + num).slice(-len);
-          }
+        function fixedLen(num, len) {
+          return ("0000000000000000" + num).slice(-len);
+        }
 
-          // URL logic
-          function getUrl(num, prefix, ext) {
-            var bin = ~~((num - 1) / 100) * 100 + 100;
-            var padNum = fixedLen(num, 5);
+        // URL logic
+        function getUrl(num, prefix, ext) {
+          var bin = ~~((num - 1) / 100) * 100 + 100;
+          var padNum = fixedLen(num, 5);
 
-            return (
-              "http://freefall.purrsia.com/ff" +
-              bin +
-              "/" +
-              prefix +
-              padNum +
-              ext
+          return (
+            "http://freefall.purrsia.com/ff" + bin + "/" + prefix + padNum + ext
+          );
+        }
+
+        // comic row layout
+        function render(node, index, record) {
+          var imgUrl = getUrl(index, record.prefix, record.ext);
+          var pageUrl = getUrl(index, record.prefix, ".htm");
+          node.find(".num").text(index).attr("href", pageUrl);
+          node.find("img").attr("src", imgUrl);
+        }
+
+        // configuration
+        BootSpeedreader({
+          data: data,
+          comicContainer: $("#contain"),
+          comicTmpl: $(".tmpl .comic"),
+          render: render,
+
+          onSetup: function (data, lastEntry) {
+            $("#moreLink").attr(
+              "href",
+              getUrl(lastEntry.last - 2, "fc", ".htm")
             );
-          }
+          },
 
-          // comic row layout
-          function render(node, index, record) {
-            var imgUrl = getUrl(index, record.prefix, record.ext);
-            var pageUrl = getUrl(index, record.prefix, ".htm");
-            node.find(".num").text(index).attr("href", pageUrl);
-            node.find("img").attr("src", imgUrl);
-          }
-
-          // configuration
-          return {
-            data: data,
-            comicContainer: $("#contain"),
-            comicTmpl: $(".tmpl .comic"),
-            render: render,
-
-            onSetup: function (data, lastEntry) {
-              $("#moreLink").attr(
-                "href",
-                getUrl(lastEntry.last - 2, "fc", ".htm")
-              );
-            },
-
-            bookmarkKey: "/comics/freefall/bookmarks/list",
-            bookmarkTmpl: $(".tmpl .entry"),
-            bookmarkBox: $("#bookmarkBox"),
-            bookmarkList: $("#bookmarkList"),
-          };
+          bookmarkKey: "/comics/freefall/bookmarks/list",
+          bookmarkTmpl: $(".tmpl .entry"),
+          bookmarkBox: $("#bookmarkBox"),
+          bookmarkList: $("#bookmarkList"),
         });
       }
     </script>

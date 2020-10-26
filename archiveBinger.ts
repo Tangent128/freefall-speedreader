@@ -46,11 +46,8 @@ interface Bookmark {
 
 // Load flytable.js and jQuery before this
 function BootSpeedreader<MetadataType extends MetadataEntry>(
-  SetupSpeedreader: () => SpeedreaderConfig<Partial<MetadataType>>
+  config: SpeedreaderConfig<Partial<MetadataType>>
 ): void {
-  /* Get Config */
-  const config = SetupSpeedreader();
-
   /* Process Data */
 
   // the types will be fixed by cookData currently
