@@ -17,11 +17,6 @@
  * @format
  */
 
-/** global configurator function */
-declare function SetupSpeedreader(
-  utility: typeof SpeedreaderUtility
-): SpeedreaderConfig<Partial<MetadataEntry>>;
-
 /** Utility Functions (for use by configuration) */
 namespace SpeedreaderUtility {
   export function fixedLen(num: number, len: number): string {
@@ -63,25 +58,26 @@ interface Bookmark {
 }
 
 // Load flytable.js and jQuery before this
-$(function <MetadataType extends MetadataEntry>() {
+function BootSpeedreader<MetadataType extends MetadataEntry>(
+  SetupSpeedreader: (
+    Utility: typeof SpeedreaderUtility
+  ) => SpeedreaderConfig<Partial<MetadataType>>
+): void {
   /* Get Config */
-  function refreshConfig(): SpeedreaderConfig<MetadataType> {
-    const loadedConfig = SetupSpeedreader(SpeedreaderUtility);
-    return $.extend(
-      {
-        /* required:
-			data | dataPromise
-			comicContainer
-			comicTmpl
-			render(comicDiv, index#, metadataRecord)
-			*/
-        rowPadding: 20,
-        scrollPadding: 300,
-      },
-      loadedConfig
-    );
-  }
-  let config = refreshConfig();
+  const loadedConfig = SetupSpeedreader(SpeedreaderUtility);
+  let config: SpeedreaderConfig<MetadataType> = $.extend(
+    {
+      /* required:
+    data | dataPromise
+    comicContainer
+    comicTmpl
+    render(comicDiv, index#, metadataRecord)
+    */
+      rowPadding: 20,
+      scrollPadding: 300,
+    },
+    loadedConfig
+  );
 
   /* Process Data */
 
@@ -130,9 +126,10 @@ $(function <MetadataType extends MetadataEntry>() {
    *
    * returns the calculated total height of the comics
    */
-  function cookData<
-    T extends MetadataEntry
-  >(array: T[], rowPadding: number): number {
+  function cookData<T extends MetadataEntry>(
+    array: T[],
+    rowPadding: number
+  ): number {
     let prev = { i: 0, h: 0, y: 0 } as Partial<T>;
     const first = array[0];
 
@@ -194,7 +191,13 @@ $(function <MetadataType extends MetadataEntry>() {
   function search<
     Key1 extends keyof MetadataType,
     Key2 extends keyof MetadataType
-  >(start: number, end: number, fieldStart: Key1, fieldEnd: Key2, value: MetadataType[Key1] & MetadataType[Key2]): MetadataType {
+  >(
+    start: number,
+    end: number,
+    fieldStart: Key1,
+    fieldEnd: Key2,
+    value: MetadataType[Key1] & MetadataType[Key2]
+  ): MetadataType {
     const midIndex = (start + end) >> 1;
     const midItem = data[midIndex];
 
@@ -364,8 +367,7 @@ $(function <MetadataType extends MetadataEntry>() {
 
   /* Kickoff */
   updateData(config);
-});
-
+}
 /*
  * See other stuff I've written at https://github.com/Tangent128/
  */

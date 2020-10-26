@@ -1,14 +1,126 @@
 <!DOCTYPE html>
 <html>
-<head>
-<meta charset="UTF-8" />
-<title>Charcole Archive Binge Speedreader</title>
-<meta name="viewport" content="width=900" />
-<script src="jquery-1.11.0.min.js"></script>
-<script src="dist/flytable.js"></script>
-<script src="dist/archiveBinger.js"></script>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Charcole Archive Binge Speedreader</title>
+    <meta name="viewport" content="width=900" />
+    <style>
+      body {
+        color: #000;
+        background: #ffffc6;
+        font-size: 16px;
+        margin: 0 auto;
+        width: 900px;
+        padding: 0;
+      }
+      .tmpl {
+        display: none;
+      }
 
-<script>
+      /* comic instance CSS */
+      .comic {
+        position: absolute;
+        width: 900px;
+      }
+      .comic img {
+        position: absolute;
+        top: 0;
+        left: 0px;
+        z-index: 0;
+      }
+
+      /* message CSS */
+      .block {
+        margin: 0px;
+        padding: 16px;
+        width: 900px;
+
+        border: 0px solid #f00;
+      }
+      .block h1 {
+        margin: 0px;
+        color: #f00;
+        text-shadow: #ff0 2px 2px 1px, #ff0 -2px 2px 1px, #ff0 2px -2px 1px,
+          #ff0 -2px -2px 1px;
+      }
+      .small {
+        font-size: 12px;
+      }
+      .moreBlock {
+        font-size: 24px;
+      }
+
+      /* Bookmark CSS */
+      #bookmarkBox {
+        display: none;
+        position: fixed;
+        right: 1em;
+        bottom: 1em;
+
+        border: solid thin #f00;
+        background: #f90;
+      }
+      #bookmarkBox .entry {
+        display: block;
+      }
+      #bookmarkBox a,
+      #bookmarkBox hr {
+        color: #fff;
+      }
+      #bookmarkBox hr {
+        clear: both;
+        margin: 0px;
+        border: solid thin #f00;
+      }
+      #bookmarkBox .deleteMark {
+        color: #f00;
+        cursor: pointer;
+        float: right;
+        margin-bottom: 5px;
+        margin-right: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="block headBlock">
+      <h1>Charcole Speedreader</h1>
+      <p>
+        This tool allows reading Charcole in a continuous format, uninterrupted
+        by page loads. It will automatically load comics as they scroll
+        onscreen, so your browser doesn't have to download everything at once.
+      </p>
+    </div>
+
+    <div id="contain"></div>
+
+    <div class="comic">
+      <div class="block moreBlock">
+        <a href="http://charcole.kyrio.net/">Main Site</a>
+      </div>
+    </div>
+
+    <div id="bookmarkBox">
+      <div id="bookmarkList"></div>
+      <div class="entry">
+        <button class="markPlace">Save Spot</button>
+      </div>
+    </div>
+
+    <div class="tmpl">
+      <div class="comic">
+        <img />
+      </div>
+      <div class="entry">
+        <a class="link"></a>
+        <a class="deleteMark">x</a>
+        <hr />
+      </div>
+    </div>
+
+    <script src="jquery-1.11.0.min.js"></script>
+    <script src="dist/flytable.js"></script>
+    <script src="dist/archiveBinger.js"></script>
+    <script>
 
 /* Speedreader, archiveBinger.js, and flytable.js coded by tangent128 */
 /* https://github.com/Tangent128 */
@@ -374,156 +486,42 @@ var COMICS = [
 ]
 ;
 
-function SetupSpeedreader(Utility) {
+BootSpeedreader(function SetupSpeedreader(Utility) {
 
-	// comic row layout
-	function render(node, index, record) {
-		node.find(".num").text(record.i);
-		node.find("img")
-			.attr("width", record.w)
-			.attr("height", record.h)
-			.attr("src", "http:"+record.f)
-		;
-	};
+    // comic row layout
+    function render(node, index, record) {
+        node.find(".num").text(record.i);
+        node.find("img")
+            .attr("width", record.w)
+            .attr("height", record.h)
+            .attr("src", "http:"+record.f)
+        ;
+    };
 
-	// resize comics to 900px width
-	var adjusted_comics = COMICS.map(function(record, i) {
-		var scale = record.w / 900;
-		return {
-			i: i,
-			f: record.f,
-			w: Math.round(record.w / scale),
-			h: Math.round(record.h / scale)
-		}
-	});
+    // resize comics to 900px width
+    var adjusted_comics = COMICS.map(function(record, i) {
+        var scale = record.w / 900;
+        return {
+            i: i,
+            f: record.f,
+            w: Math.round(record.w / scale),
+            h: Math.round(record.h / scale)
+        }
+    });
 
-	// configuration
-	return {
-		data: adjusted_comics,
-		comicContainer: $("#contain"),
-		comicTmpl: $(".tmpl .comic"),
-		render: render,
-		
-		bookmarkKey: "/comics/charcole/bookmarks/list",
-		bookmarkTmpl: $(".tmpl .entry"),
-		bookmarkBox: $("#bookmarkBox"),
-		bookmarkList: $("#bookmarkList")
-	};
-};
-
-</script>
-
-<style>
-body {
-	color: #000;
-	background: #ffffc6;
-	font-size: 16px;
-	margin: 0 auto;
-	width: 900px;
-	padding: 0;
-}
-.tmpl {
-	display: none;
-}
-
-/* comic instance CSS */
-.comic {
-	position: absolute;
-	width: 900px;
-}
-.comic img {
-	position: absolute;
-	top: 0; left: 0px;
-	z-index: 0;
-}
-
-/* message CSS */
-.block {
-	margin: 0px;
-	padding: 16px;
-	width: 900px;
-
-	border: 0px solid #f00;
-}
-.block h1 {
-	margin: 0px;
-	color: #f00;
-	text-shadow: #ff0 2px 2px 1px, #ff0 -2px 2px 1px, #ff0 2px -2px 1px, #ff0 -2px -2px 1px;
-}
-.small {
-	font-size: 12px;
-}
-.moreBlock {
-	font-size: 24px;
-}
-
-/* Bookmark CSS */
-#bookmarkBox {
-	display: none;
-	position: fixed;
-	right: 1em;
-	bottom: 1em;
-	
-	border: solid thin #f00;
-	background: #f90;
-}
-#bookmarkBox .entry {
-	display: block;
-}
-#bookmarkBox a, #bookmarkBox hr {
-	color: #fff;
-}
-#bookmarkBox hr {
-	clear: both;
-	margin: 0px;
-	border: solid thin #f00;
-}
-#bookmarkBox .deleteMark {
-	color: #f00;
-	cursor: pointer;
-	float: right;
-	margin-bottom: 5px;
-	margin-right: 3px;
-}
-</style>
-</head>
-<body>
-
-<div class="block headBlock">
-<h1>Charcole Speedreader</h1>
-<p>This tool allows reading Charcole in a continuous format, uninterrupted
-by page loads. It will automatically load comics as they scroll onscreen,
-so your browser doesn't have to download everything at once.</p>
-
-</div>
-
-<div id="contain"></div>
-
-<div class="comic">
-<div class="block moreBlock">
-	<a href="http://charcole.kyrio.net/">Main Site</a>
-</div>
-</div>
-
-<div id="bookmarkBox">
-	<div id="bookmarkList">
-	</div>
-	<div class="entry">
-		<button class="markPlace">Save Spot</button>
-	</div>
-</div>
-
-<div class="tmpl">
-	<div class="comic">
-		<img />
-	</div>
-	<div class="entry">
-		<a class="link"></a>
-		<a class="deleteMark">x</a>
-		<hr />
-	</div>
-</div>
-
-</body>
+    // configuration
+    return {
+        data: adjusted_comics,
+        comicContainer: $("#contain"),
+        comicTmpl: $(".tmpl .comic"),
+        render: render,
+        
+        bookmarkKey: "/comics/charcole/bookmarks/list",
+        bookmarkTmpl: $(".tmpl .entry"),
+        bookmarkBox: $("#bookmarkBox"),
+        bookmarkList: $("#bookmarkList")
+    };
+});
+    </script>
+  </body>
 </html>
-
