@@ -1,195 +1,203 @@
+<!-- @format -->
+
 <!DOCTYPE html>
 <html>
-<head>
-<meta charset="UTF-8" />
-<title>Freefall Archive Binge Speedreader</title>
-<script src="jquery-1.11.0.min.js"></script>
-<script src="dist/flytable.js"></script>
-<script src="dist/archiveBinger.js"></script>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Freefall Archive Binge Speedreader</title>
+    <script src="jquery-1.11.0.min.js"></script>
+    <script src="dist/flytable.js"></script>
+    <script src="dist/archiveBinger.js"></script>
 
-<script>
+    <script>
+      /* Speedreader, archiveBinger.js, and flytable.js coded by tangent128 */
+      /* https://github.com/Tangent128 */
 
-/* Speedreader, archiveBinger.js, and flytable.js coded by tangent128 */
-/* https://github.com/Tangent128 */
+      function SetupSpeedreader(Utility) {
+        // URL logic
+        function getUrl(num, prefix, ext) {
+          var bin = ~~((num - 1) / 100) * 100 + 100;
+          var padNum = Utility.fixedLen(num, 5);
 
-function SetupSpeedreader(Utility) {
+          return (
+            "http://freefall.purrsia.com/ff" + bin + "/" + prefix + padNum + ext
+          );
+        }
 
-	// URL logic
-	function getUrl(num, prefix, ext) {
-		var bin = ((~~((num - 1) / 100)) * 100) + 100;
-		var padNum = Utility.fixedLen(num, 5);
-		
-		return "http://freefall.purrsia.com/ff"+bin+"/"+prefix+padNum+ext;
-	};
-	
-	// comic row layout
-	function render(node, index, record) {
-		var imgUrl = getUrl(index, record.prefix, record.ext);
-		var pageUrl = getUrl(index, record.prefix, ".htm");
-		node.find(".num").text(index).attr("href", pageUrl);
-		node.find("img").attr("src", imgUrl);
-	};
+        // comic row layout
+        function render(node, index, record) {
+          var imgUrl = getUrl(index, record.prefix, record.ext);
+          var pageUrl = getUrl(index, record.prefix, ".htm");
+          node.find(".num").text(index).attr("href", pageUrl);
+          node.find("img").attr("src", imgUrl);
+        }
 
-	// configuration
-	return {
-		// comic dimension data in external file now
-		dataPromise: $.ajax({
-			url:"http://freefall.purrsia.com/fabsdata.js",
-			crossDomain: true,
-			dataType: "jsonp",
-			jsonpCallback:"FreefallData"
-		}),
-		comicContainer: $("#contain"),
-		comicTmpl: $(".tmpl .comic"),
-		render: render,
-		
-		onSetup: function(data) {
-			$("#moreLink").attr("href", getUrl(data.last - 1, "fc", ".htm"));
-		},
-		
-		bookmarkKey: "/comics/freefall/bookmarks/list",
-		bookmarkTmpl: $(".tmpl .entry"),
-		bookmarkBox: $("#bookmarkBox"),
-		bookmarkList: $("#bookmarkList")
-	};
-};
+        // configuration
+        return {
+          // comic dimension data in external file now
+          dataPromise: $.ajax({
+            url: "http://freefall.purrsia.com/fabsdata.js",
+            crossDomain: true,
+            dataType: "jsonp",
+            jsonpCallback: "FreefallData",
+          }),
+          comicContainer: $("#contain"),
+          comicTmpl: $(".tmpl .comic"),
+          render: render,
 
-</script>
+          onSetup: function (data) {
+            $("#moreLink").attr("href", getUrl(data.last - 1, "fc", ".htm"));
+          },
 
-<style>
-body {
-	color: #000;
-	background: #ffcc99 url(http://freefall.purrsia.com/bkgd.gif);
-	font-size: 16px;
-}
-.tmpl {
-	display: none;
-}
+          bookmarkKey: "/comics/freefall/bookmarks/list",
+          bookmarkTmpl: $(".tmpl .entry"),
+          bookmarkBox: $("#bookmarkBox"),
+          bookmarkList: $("#bookmarkList"),
+        };
+      }
+    </script>
 
-/* comic instance CSS */
-.comic {
-	width: 1100px;
-}
-.comic .bg {
-	position: absolute;
-	display: block;
-	top: 0; left: 0; right: 0; bottom: 0;
-}
-.comic .num {
-	position: absolute;
-	top: 0; right: 32px;
-	font-weight: bold;
-	padding: 3px;
-	z-index: 1;
-}
-.comic img {
-	position: absolute;
-	top: 0; left: 32px;
-	z-index: 0;
-}
+    <style>
+      body {
+        color: #000;
+        background: #ffcc99 url(http://freefall.purrsia.com/bkgd.gif);
+        font-size: 16px;
+      }
+      .tmpl {
+        display: none;
+      }
 
-/* message CSS */
-.block {
-	margin-left: 32px;
-	padding: 16px;
+      /* comic instance CSS */
+      .comic {
+        width: 1100px;
+      }
+      .comic .bg {
+        position: absolute;
+        display: block;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+      }
+      .comic .num {
+        position: absolute;
+        top: 0;
+        right: 32px;
+        font-weight: bold;
+        padding: 3px;
+        z-index: 1;
+      }
+      .comic img {
+        position: absolute;
+        top: 0;
+        left: 32px;
+        z-index: 0;
+      }
 
-	background: #ffc;
-}
-.headBlock {
-	border: 2px solid black;
-	width: calc(768px - (16px + 2px) * 2);
-	margin-bottom: 20px;
-}
-.headBlock h1 {
-	margin: 0;
-}
-.small {
-	font-size: 12px;
-}
-.moreBlock {
-	border: 3px solid black;
-	width: calc(982px - (16px + 3px) * 2);
+      /* message CSS */
+      .block {
+        margin-left: 32px;
+        padding: 16px;
 
-	background: #0dc8b0;
-	
-	font-size: 24px;
-}
+        background: #ffc;
+      }
+      .headBlock {
+        border: 2px solid black;
+        width: calc(768px - (16px + 2px) * 2);
+        margin-bottom: 20px;
+      }
+      .headBlock h1 {
+        margin: 0;
+      }
+      .small {
+        font-size: 12px;
+      }
+      .moreBlock {
+        border: 3px solid black;
+        width: calc(982px - (16px + 3px) * 2);
 
-/* Bookmark CSS */
-#bookmarkBox {
-	display: none;
-	position: fixed;
-	right: 1em;
-	bottom: 1em;
-	
-	border: solid thin #00f;
-	
-	background: #fff;
-}
-#bookmarkBox .entry {
-	display: block;
-}
-#bookmarkBox a, #bookmarkBox hr {
-	color: #00f;
-}
-#bookmarkBox hr {
-	clear: both;
-	margin: 0px;
-}
-#bookmarkBox .deleteMark {
-	color: #f00;
-	cursor: pointer;
-	float: right;
-	margin-bottom: 5px;
-	margin-right: 3px;
-}
-</style>
-</head>
-<body>
+        background: #0dc8b0;
 
-<div class="block headBlock">
-<h1>Freefall Archive Binge Speedreader</h1>
-<p>This tool allows reading Freefall in a continuous format, uninterrupted
-by page loads. It will automatically load comics as they scroll onscreen,
-so your browser doesn't have to download everything at once.</p>
+        font-size: 24px;
+      }
 
-</div>
+      /* Bookmark CSS */
+      #bookmarkBox {
+        display: none;
+        position: fixed;
+        right: 1em;
+        bottom: 1em;
 
-<div id="contain"></div>
+        border: solid thin #00f;
 
-<div class="comic">
-<div class="block moreBlock">
-Continue to <a id="moreLink">the latest archive page</a>, or <a href="http://freefall.purrsia.com/">the comic front page</a>.
-</div>
-</div>
+        background: #fff;
+      }
+      #bookmarkBox .entry {
+        display: block;
+      }
+      #bookmarkBox a,
+      #bookmarkBox hr {
+        color: #00f;
+      }
+      #bookmarkBox hr {
+        clear: both;
+        margin: 0px;
+      }
+      #bookmarkBox .deleteMark {
+        color: #f00;
+        cursor: pointer;
+        float: right;
+        margin-bottom: 5px;
+        margin-right: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="block headBlock">
+      <h1>Freefall Archive Binge Speedreader</h1>
+      <p>
+        This tool allows reading Freefall in a continuous format, uninterrupted
+        by page loads. It will automatically load comics as they scroll
+        onscreen, so your browser doesn't have to download everything at once.
+      </p>
+    </div>
 
-<hr />
+    <div id="contain"></div>
 
-<p class="small">Freefall is written and drawn by Mark Stanley. This interface was coded by Tangent.</p>
+    <div class="comic">
+      <div class="block moreBlock">
+        Continue to <a id="moreLink">the latest archive page</a>, or
+        <a href="http://freefall.purrsia.com/">the comic front page</a>.
+      </div>
+    </div>
 
-<div id="bookmarkBox">
-	<div id="bookmarkList">
-	</div>
-	<div class="entry">
-		<button class="markPlace">Save Spot</button>
-	</div>
-</div>
+    <hr />
 
-<div class="tmpl">
-	<div class="comic">
-		<div class="bg">
-			<span class="dbg"></span>
-			<a class="num"></a>
-			<img />
-		</div>
-	</div>
-	<div class="entry">
-		<a class="link"></a>
-		<a class="deleteMark">x</a>
-		<hr />
-	</div>
-</div>
+    <p class="small">
+      Freefall is written and drawn by Mark Stanley. This interface was coded by
+      Tangent.
+    </p>
 
-</body>
+    <div id="bookmarkBox">
+      <div id="bookmarkList"></div>
+      <div class="entry">
+        <button class="markPlace">Save Spot</button>
+      </div>
+    </div>
+
+    <div class="tmpl">
+      <div class="comic">
+        <div class="bg">
+          <span class="dbg"></span>
+          <a class="num"></a>
+          <img />
+        </div>
+      </div>
+      <div class="entry">
+        <a class="link"></a>
+        <a class="deleteMark">x</a>
+        <hr />
+      </div>
+    </div>
+  </body>
 </html>
-

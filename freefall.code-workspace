@@ -1,0 +1,21 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"prettier.arrowParens": "avoid",
+		"prettier.insertPragma": true,
+		"editor.formatOnSave": true,
+		"javascript.format.enable": false,
+		"typescript.format.enable": false,
+		"editor.defaultFormatter": "esbenp.prettier-vscode",
+		"importSorter.generalConfiguration.sortOnBeforeSave": true,
+		"importSorter.importStringConfiguration.quoteMark": "double",
+		"importSorter.importStringConfiguration.tabSize": 2,
+		"importSorter.importStringConfiguration.trailingComma": "multiLine",
+		"importSorter.importStringConfiguration.maximumNumberOfImportExpressionsPerLine.type": "newLineEachExpressionAfterCountLimitExceptIfOnlyOne",
+		"prettier.requirePragma": true
+	}
+}

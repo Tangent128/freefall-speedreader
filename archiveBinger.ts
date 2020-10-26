@@ -1,4 +1,5 @@
-/* ISC Licensed:
+/**
+ * /* ISC Licensed:
  *
  * Copyright (c) 2015-2019, Tangent128
  * Permission to use, copy, modify, and/or distribute this software for
@@ -12,6 +13,8 @@
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ * @format
  */
 
 /** global configurator function */
@@ -51,7 +54,8 @@ type SpeedreaderConfig<T> = {
     }
   | {
       dataPromise: JQueryPromise<T[]>;
-    });
+    }
+);
 
 interface Bookmark {
   text: string;
@@ -59,7 +63,7 @@ interface Bookmark {
 }
 
 // Load flytable.js and jQuery before this
-$(function<MetadataType extends MetadataEntry>() {
+$(function <MetadataType extends MetadataEntry>() {
   /* Get Config */
   function refreshConfig(): SpeedreaderConfig<MetadataType> {
     const loadedConfig = SetupSpeedreader(SpeedreaderUtility);
@@ -72,7 +76,7 @@ $(function<MetadataType extends MetadataEntry>() {
 			render(comicDiv, index#, metadataRecord)
 			*/
         rowPadding: 20,
-        scrollPadding: 300
+        scrollPadding: 300,
       },
       loadedConfig
     );
@@ -82,7 +86,7 @@ $(function<MetadataType extends MetadataEntry>() {
   /* Process Data */
 
   let data: MetadataType[] = [
-    { i: 0, h: 0, y: 0, last: 1, lastY: 1 } as MetadataType
+    { i: 0, h: 0, y: 0, last: 1, lastY: 1 } as MetadataType,
   ];
   let last = 0;
   let totalHeight = 0;
@@ -113,7 +117,7 @@ $(function<MetadataType extends MetadataEntry>() {
       processUpdate(config, config.data);
     }
     if ("dataPromise" in config) {
-      config.dataPromise.then(function(data) {
+      config.dataPromise.then(function (data) {
         processUpdate(config, data as MetadataType[]);
       });
     }
@@ -183,7 +187,7 @@ $(function<MetadataType extends MetadataEntry>() {
 
   table.scrollPadding = config.scrollPadding;
 
-  table.getTotalHeight = function() {
+  table.getTotalHeight = function () {
     return totalHeight;
   };
 
@@ -214,7 +218,7 @@ $(function<MetadataType extends MetadataEntry>() {
   function getData(index: number) {
     return search(0, data.length, "i", "last", index);
   }
-  table.getItemTop = function(index) {
+  table.getItemTop = function (index) {
     const entry = getData(index);
 
     const offset = index - entry.i;
@@ -222,12 +226,12 @@ $(function<MetadataType extends MetadataEntry>() {
 
     return y;
   };
-  table.getItemHeight = function(index) {
+  table.getItemHeight = function (index) {
     const entry = getData(index);
     return entry.h;
   };
 
-  table.pixelToIndex = function(y) {
+  table.pixelToIndex = function (y) {
     if (y <= 0) {
       return data[0].i;
     }
@@ -243,7 +247,7 @@ $(function<MetadataType extends MetadataEntry>() {
     }
   };
 
-  table.getComponent = function(comicNum) {
+  table.getComponent = function (comicNum) {
     const node = config.comicTmpl.clone();
     config.render(node, comicNum, getData(comicNum));
 
@@ -294,10 +298,7 @@ $(function<MetadataType extends MetadataEntry>() {
     bookmarkList.empty();
     getBookmarks().forEach((bookmark, i) => {
       const entry = bookmarkTmpl.clone();
-      entry
-        .find(".link")
-        .attr("href", bookmark.url)
-        .text(bookmark.text);
+      entry.find(".link").attr("href", bookmark.url).text(bookmark.text);
       entry.find(".deleteMark").attr("data-index", i);
       bookmarkList.append(entry);
     });
@@ -311,7 +312,7 @@ $(function<MetadataType extends MetadataEntry>() {
   /* Setup Events */
 
   let lastY = 0;
-  $(document).on("scroll", function(evt) {
+  $(document).on("scroll", function (evt) {
     const scrollY = window.scrollY;
     if (Math.abs(scrollY - lastY) > 50) {
       updateHash();
@@ -319,7 +320,7 @@ $(function<MetadataType extends MetadataEntry>() {
       lastY = scrollY;
     }
   });
-  $(window).on("hashchange", function() {
+  $(window).on("hashchange", function () {
     jumpToHash();
     table.render();
   });
@@ -332,23 +333,23 @@ $(function<MetadataType extends MetadataEntry>() {
   ) {
     if (window.addEventListener) {
       // can't catch this event with jQuery, somehow
-      window.addEventListener("storage", function(e) {
+      window.addEventListener("storage", function (e) {
         if (e.key == config.bookmarkKey) {
           updateBookmarkList();
         }
       });
     }
 
-    config.bookmarkBox.on("click", ".markPlace", function() {
+    config.bookmarkBox.on("click", ".markPlace", function () {
       const comicNum = currentComic();
       const list = getBookmarks();
       list.push({
         text: "#" + comicNum,
-        url: "#" + comicNum
+        url: "#" + comicNum,
       });
       saveBookmarks(list);
     });
-    config.bookmarkBox.on("click", ".deleteMark", function(this: HTMLElement) {
+    config.bookmarkBox.on("click", ".deleteMark", function (this: HTMLElement) {
       const index = Number($(this).attr("data-index"));
       const list = getBookmarks();
       list.splice(index, 1);

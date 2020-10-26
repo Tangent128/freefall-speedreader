@@ -1,4 +1,5 @@
-/* ISC Licensed:
+/**
+ * /* ISC Licensed:
  *
  * Copyright (c) 2014-2019, Tangent128
  * Permission to use, copy, modify, and/or distribute this software for
@@ -12,6 +13,8 @@
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ * @format
  */
 
 class Flytable {
@@ -23,25 +26,25 @@ class Flytable {
   scrollPadding = 10;
 
   /* Public Overrides */
-  public recalculate = function(this: Flytable) {};
+  public recalculate = function (this: Flytable) {};
 
-  public getComponent = function(this: Flytable, _index: number): JQuery {
+  public getComponent = function (this: Flytable, _index: number): JQuery {
     return $("<s>no renderer</s>");
   };
 
-  public getItemTop = function(this: Flytable, index: number): number {
+  public getItemTop = function (this: Flytable, index: number): number {
     return this.getItemHeight(0) * index; // arbitrary value
   };
 
-  public getItemHeight = function(this: Flytable, _index: number): number {
+  public getItemHeight = function (this: Flytable, _index: number): number {
     return 16; // arbitrary value
   };
 
-  public getTotalHeight = function(this: Flytable): number {
+  public getTotalHeight = function (this: Flytable): number {
     return 160; // arbitrary value
   };
 
-  public pixelToIndex = function(this: Flytable, y: number): number {
+  public pixelToIndex = function (this: Flytable, y: number): number {
     return ~~(y / this.getItemHeight(0));
   };
 
@@ -82,7 +85,7 @@ class Flytable {
 
     container.css({
       position: "relative",
-      height: height
+      height: height,
     });
 
     // pad region
@@ -107,7 +110,7 @@ class Flytable {
           left: "0",
           right: "0",
           top: y,
-          height: h
+          height: h,
         });
         element.data("flytable-index", index);
         this.includeInSlice(index);
@@ -139,12 +142,12 @@ class Flytable {
     let tmpl: JQuery;
     let rowHeight: number;
 
-    this.recalculate = function() {
+    this.recalculate = function () {
       tmpl = $(templateSelector);
       rowHeight = tmpl.height();
     };
 
-    this.getComponent = function(index) {
+    this.getComponent = function (index) {
       const node = tmpl.clone();
 
       renderFunc(index, node);
@@ -152,15 +155,15 @@ class Flytable {
       return node;
     };
 
-    this.getItemTop = function(index) {
+    this.getItemTop = function (index) {
       return rowHeight * index;
     };
 
-    this.getItemHeight = function(index) {
+    this.getItemHeight = function (index) {
       return rowHeight;
     };
 
-    this.getTotalHeight = function() {
+    this.getTotalHeight = function () {
       return rowHeight * getDataCount();
     };
   }
@@ -175,11 +178,11 @@ class Flytable {
     renderFunc: (value: T, node: JQuery, index: number) => void
   ) {
     this.simpleDataset(
-      function() {
+      function () {
         return array.length;
       },
       templateSelector,
-      function(index, node) {
+      function (index, node) {
         renderFunc(array[index], node, index);
       }
     );
