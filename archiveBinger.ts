@@ -33,7 +33,6 @@ type SpeedreaderConfig<T> = {
   comicContainer: JQuery;
   comicTmpl: JQuery;
   data: T[];
-  onSetup: (data: T[], lastEntry: T) => void;
   render: (comicDiv: JQuery, index: number, metadataRecord: T) => void;
   rowPadding?: number;
   scrollPadding?: number;
@@ -63,10 +62,6 @@ function BootSpeedreader<MetadataType extends MetadataEntry>(
     if (initialLoad) {
       jumpToHash();
       initialLoad = false;
-    }
-
-    if (config.onSetup) {
-      config.onSetup(data, data[data.length - 1]);
     }
   }
 

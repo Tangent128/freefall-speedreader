@@ -181,19 +181,15 @@
           node.find("img").attr("src", imgUrl);
         }
 
+        var lastEntry = data[data.length - 1];
+        $("#moreLink").attr("href", getUrl(lastEntry.i - 1, "fc", ".htm"));
+
         // configuration
         BootSpeedreader({
           data: data,
           comicContainer: $("#contain"),
           comicTmpl: $(".tmpl .comic"),
           render: render,
-
-          onSetup: function (data, lastEntry) {
-            $("#moreLink").attr(
-              "href",
-              getUrl(lastEntry.last - 2, "fc", ".htm")
-            );
-          },
 
           bookmarkKey: "/comics/freefall/bookmarks/list",
           bookmarkTmpl: $(".tmpl .entry"),
