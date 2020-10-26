@@ -159,11 +159,15 @@
        * which will call this with the appropriate data value
        */
       function FreefallData(data) {
-        BootSpeedreader(function SetupSpeedreader(Utility) {
+        BootSpeedreader(function SetupSpeedreader() {
+          function fixedLen(num, len) {
+            return ("0000000000000000" + num).slice(-len);
+          }
+
           // URL logic
           function getUrl(num, prefix, ext) {
             var bin = ~~((num - 1) / 100) * 100 + 100;
-            var padNum = Utility.fixedLen(num, 5);
+            var padNum = fixedLen(num, 5);
 
             return (
               "http://freefall.purrsia.com/ff" +
@@ -191,7 +195,6 @@
             render: render,
 
             onSetup: function (data, lastEntry) {
-              console.debug(data);
               $("#moreLink").attr(
                 "href",
                 getUrl(lastEntry.last - 2, "fc", ".htm")

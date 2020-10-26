@@ -17,13 +17,6 @@
  * @format
  */
 
-/** Utility Functions (for use by configuration) */
-namespace SpeedreaderUtility {
-  export function fixedLen(num: number, len: number): string {
-    return ("0000000000000000" + num).slice(-len);
-  }
-}
-
 type MetadataEntry = {
   i: number;
   h: number;
@@ -53,12 +46,10 @@ interface Bookmark {
 
 // Load flytable.js and jQuery before this
 function BootSpeedreader<MetadataType extends MetadataEntry>(
-  SetupSpeedreader: (
-    Utility: typeof SpeedreaderUtility
-  ) => SpeedreaderConfig<Partial<MetadataType>>
+  SetupSpeedreader: () => SpeedreaderConfig<Partial<MetadataType>>
 ): void {
   /* Get Config */
-  const config = SetupSpeedreader(SpeedreaderUtility);
+  const config = SetupSpeedreader();
 
   /* Process Data */
 
