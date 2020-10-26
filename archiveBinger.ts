@@ -42,8 +42,8 @@ type SpeedreaderConfig<T> = {
   data: T[];
   onSetup: (data: T[], lastEntry: T) => void;
   render: (comicDiv: JQuery, index: number, metadataRecord: T) => void;
-  rowPadding: number;
-  scrollPadding: number;
+  rowPadding?: number;
+  scrollPadding?: number;
 };
 
 interface Bookmark {
@@ -58,26 +58,14 @@ function BootSpeedreader<MetadataType extends MetadataEntry>(
   ) => SpeedreaderConfig<Partial<MetadataType>>
 ): void {
   /* Get Config */
-  const loadedConfig = SetupSpeedreader(SpeedreaderUtility);
-  const config: SpeedreaderConfig<MetadataType> = $.extend(
-    {
-      /* required:
-    data
-    comicContainer
-    comicTmpl
-    render(comicDiv, index#, metadataRecord)
-    */
-      rowPadding: 20,
-      scrollPadding: 300,
-    },
-    loadedConfig
-  );
+  const config = SetupSpeedreader(SpeedreaderUtility);
 
   /* Process Data */
 
-  const data: MetadataType[] = config.data;
+  // the types will be fixed by cookData currently
+  const data: MetadataType[] = config.data as MetadataType[];
   let last = 0;
-  const totalHeight = cookData(data, config.rowPadding);
+  const totalHeight = cookData(data, config.rowPadding || 20);
 
   let initialLoad = true;
   function processUpdate() {
@@ -157,7 +145,7 @@ function BootSpeedreader<MetadataType extends MetadataEntry>(
   const table = setupFlyTable(config.comicContainer);
   (window as any).DebugTable = table;
 
-  table.scrollPadding = config.scrollPadding;
+  table.scrollPadding = config.scrollPadding || 300;
 
   table.getTotalHeight = function () {
     return totalHeight;
