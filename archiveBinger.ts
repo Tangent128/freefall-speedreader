@@ -25,6 +25,104 @@ type MetadataEntry = {
   lastY: number;
 };
 
+/**
+ * Implements the data structure used for relating y-positions to comic metadata.
+ */
+class ComicTable<T extends MetadataEntry> {
+  private comics: T[] = [];
+
+  /**
+   * "Cook" the possibly-compacted version of the data table
+   *  into a form easy for flytable code to process:
+   * - calculate index and y-axis extents to determine when search has found right record
+   * - copy forward unchanged metadata attributes for use by comic renderer
+   */
+  constructor(compactData: Partial<T>[], rowPadding: number) {
+    const keys = Object.keys(compactData[0]) as (keyof T)[];
+    compactData.forEach((compactEntry, i) => {
+      const fullEntry: Partial<T> = {};
+      // copy attributes forwards
+      keys.forEach(key => {
+        if (key === "h") {
+          fullEntry.h =
+            compactEntry.h !== undefined
+              ? compactEntry.h + rowPadding
+              : this.comics[i - 1].h;
+        } else {
+          fullEntry[key] =
+            key in compactEntry ? compactEntry[key] : this.comics[i - 1][key];
+        }
+      });
+
+      if (i == 0) {
+        fullEntry.y = 0;
+      } else {
+        // calculate segment height + span
+        const prev = this.comics[i - 1];
+        const span = fullEntry.i! - prev.i;
+        fullEntry.y = prev.y + span * prev.h;
+        // backpatch last & lastY values
+        prev.last = fullEntry.i!;
+        prev.lastY = fullEntry.y!;
+      }
+      this.comics[i] = fullEntry as T;
+    });
+
+    // finish patching up table, filling out final entry
+    const finalEntry = this.comics[this.comics.length - 1];
+    finalEntry.last = finalEntry.i + 1;
+    finalEntry.lastY = finalEntry.y + finalEntry.h;
+  }
+
+  private search<Key1 extends keyof T, Key2 extends keyof T>(
+    start: number,
+    end: number,
+    fieldStart: Key1,
+    fieldEnd: Key2,
+    value: T[Key1] & T[Key2]
+  ): T {
+    const midIndex = (start + end) >> 1;
+    const midItem = this.comics[midIndex];
+
+    const midPlus = midItem[fieldStart] <= value;
+    const midMinus = value < midItem[fieldEnd];
+
+    if (midPlus && midMinus) {
+      // found target
+      return midItem;
+    } else if (midPlus && midIndex + 1 < end) {
+      // search items above midpoint
+      return this.search(midIndex + 1, end, fieldStart, fieldEnd, value);
+    } else if (midMinus && start < midIndex) {
+      // search items below midpoint
+      return this.search(start, midIndex, fieldStart, fieldEnd, value);
+    } else {
+      // nowhere left to search, this must be the closest we can get
+      return midItem;
+    }
+  }
+
+  public getForIndex(index: number): T {
+    return this.search(0, this.comics.length, "i", "last", index);
+  }
+
+  public getForY(y: number): T {
+    return this.search(0, this.comics.length, "y", "lastY", y);
+  }
+
+  public getFirstIndex(): number {
+    return this.comics[0].i;
+  }
+
+  public getLastIndex(): number {
+    return this.comics[this.comics.length - 1].i;
+  }
+
+  public getTotalHeight(): number {
+    return this.comics[this.comics.length - 1].lastY;
+  }
+}
+
 type SpeedreaderConfig<T> = {
   bookmarkBox?: JQuery;
   bookmarkKey?: string;
@@ -48,11 +146,7 @@ function BootSpeedreader<MetadataType extends MetadataEntry>(
   config: SpeedreaderConfig<Partial<MetadataType>>
 ): void {
   /* Process Data */
-
-  // the types will be fixed by cookData currently
-  const data: MetadataType[] = config.data as MetadataType[];
-  let last = 0;
-  const totalHeight = cookData(data, config.rowPadding || 20);
+  const comicTable = new ComicTable(config.data, config.rowPadding || 20);
 
   let initialLoad = true;
   function processUpdate() {
@@ -65,64 +159,6 @@ function BootSpeedreader<MetadataType extends MetadataEntry>(
     }
   }
 
-  /**
-   * process data array into form easy for flytable code to process:
-   * - calculate index and y-axis extents to determine when search has found right record
-   * - copy forward unchanged metadata attributes for use by comic renderer
-   *
-   * returns the calculated total height of the comics
-   */
-  function cookData<T extends MetadataEntry>(
-    array: T[],
-    rowPadding: number
-  ): number {
-    let prev = { i: 0, h: 0, y: 0 } as Partial<T>;
-    const first = array[0];
-
-    // discover custom attributes
-    const attributes = [] as (keyof T)[];
-    for (const key in first) {
-      if (!(key in prev)) {
-        attributes.push(key);
-      }
-    }
-
-    array.forEach(item => {
-      // copy attributes forward
-      attributes.forEach(attr => {
-        if (!(attr in item)) {
-          item[attr] = prev[attr] as T[keyof T];
-        }
-      });
-
-      // copy height forward + ensure requested padding
-      if (item.h) {
-        item.h += rowPadding;
-      } else {
-        item.h = prev.h as number;
-      }
-
-      // calculate segment height & spanned indices
-      const span = item.i - (prev.i as number);
-      item.y = (prev.y as number) + span * (prev.h as number);
-
-      prev.last = item.i;
-      prev.lastY = item.y;
-      prev = item;
-    });
-
-    // last item needs to be given explicitly
-    const lastEntry = array[array.length - 1];
-    last = lastEntry.i;
-    lastEntry.last = lastEntry.i + 1;
-
-    const lastSpan = lastEntry.last - lastEntry.i;
-    const totalHeight = lastEntry.y + lastEntry.h * lastSpan;
-    lastEntry.lastY = totalHeight;
-
-    return totalHeight;
-  }
-
   /* Setup Flytable */
 
   const table = setupFlyTable(config.comicContainer);
@@ -130,45 +166,10 @@ function BootSpeedreader<MetadataType extends MetadataEntry>(
 
   table.scrollPadding = config.scrollPadding || 300;
 
-  table.getTotalHeight = function () {
-    return totalHeight;
-  };
+  table.getTotalHeight = () => comicTable.getTotalHeight();
 
-  function search<
-    Key1 extends keyof MetadataType,
-    Key2 extends keyof MetadataType
-  >(
-    start: number,
-    end: number,
-    fieldStart: Key1,
-    fieldEnd: Key2,
-    value: MetadataType[Key1] & MetadataType[Key2]
-  ): MetadataType {
-    const midIndex = (start + end) >> 1;
-    const midItem = data[midIndex];
-
-    const midPlus = midItem[fieldStart] <= value;
-    const midMinus = value < midItem[fieldEnd];
-
-    if (midPlus && midMinus) {
-      // found target
-      return midItem;
-    } else if (midPlus && midIndex + 1 < end) {
-      // search items above midpoint
-      return search(midIndex + 1, end, fieldStart, fieldEnd, value);
-    } else if (midMinus && start < midIndex) {
-      // search items below midpoint
-      return search(start, midIndex, fieldStart, fieldEnd, value);
-    } else {
-      // nowhere left to search, this must be the closest we can get
-      return midItem;
-    }
-  }
-  function getData(index: number) {
-    return search(0, data.length, "i", "last", index);
-  }
   table.getItemTop = function (index) {
-    const entry = getData(index);
+    const entry = comicTable.getForIndex(index);
 
     const offset = index - entry.i;
     const y = entry.y + entry.h * offset;
@@ -176,29 +177,29 @@ function BootSpeedreader<MetadataType extends MetadataEntry>(
     return y;
   };
   table.getItemHeight = function (index) {
-    const entry = getData(index);
+    const entry = comicTable.getForIndex(index);
     return entry.h;
   };
 
   table.pixelToIndex = function (y) {
     if (y <= 0) {
-      return data[0].i;
+      return comicTable.getFirstIndex();
     }
 
-    const item = search(0, data.length, "y", "lastY", y);
+    const item = comicTable.getForY(y);
     if (item) {
       const offset = y - item.y;
       const indexOffset = ~~(offset / item.h);
 
       return item.i + indexOffset;
     } else {
-      return last;
+      return comicTable.getLastIndex();
     }
   };
 
   table.getComponent = function (comicNum) {
     const node = config.comicTmpl.clone();
-    config.render(node, comicNum, getData(comicNum));
+    config.render(node, comicNum, comicTable.getForIndex(comicNum));
 
     return node;
   };
