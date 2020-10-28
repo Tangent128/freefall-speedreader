@@ -124,10 +124,10 @@ class ComicTable<T extends MetadataEntry> {
 }
 
 type SpeedreaderConfig<T> = {
-  bookmarkBox?: JQuery;
+  bookmarkBox?: HTMLElement;
   bookmarkKey?: string;
-  bookmarkList?: JQuery;
-  bookmarkTmpl?: JQuery;
+  bookmarkList?: HTMLElement;
+  bookmarkTmpl?: HTMLElement;
   comicContainer: JQuery;
   comicTmpl: JQuery;
   data: T[];
@@ -162,7 +162,6 @@ function BootSpeedreader<MetadataType extends MetadataEntry>(
   /* Setup Flytable */
 
   const table = setupFlyTable(config.comicContainer);
-  (window as any).DebugTable = table;
 
   table.scrollPadding = config.scrollPadding || 300;
 
@@ -245,11 +244,14 @@ function BootSpeedreader<MetadataType extends MetadataEntry>(
   function updateBookmarkList() {
     const { bookmarkList, bookmarkTmpl } = config;
     if (!(bookmarkList && bookmarkTmpl)) return;
-    bookmarkList.empty();
+    bookmarkList.innerHTML = "";
     getBookmarks().forEach((bookmark, i) => {
-      const entry = bookmarkTmpl.clone();
-      entry.find(".link").attr("href", bookmark.url).text(bookmark.text);
-      entry.find(".deleteMark").attr("data-index", i);
+      const entry = bookmarkTmpl.cloneNode(true) as HTMLElement;
+      const link = entry.querySelector(".link") as HTMLAnchorElement;
+      link.href = bookmark.url;
+      link.innerText = bookmark.text;
+      const deleteMark = entry.querySelector(".deleteMark") as HTMLElement;
+      deleteMark.setAttribute("data-index", String(i));
       bookmarkList.append(entry);
     });
   }
@@ -290,24 +292,29 @@ function BootSpeedreader<MetadataType extends MetadataEntry>(
       });
     }
 
-    config.bookmarkBox.on("click", ".markPlace", function () {
-      const comicNum = currentComic();
-      const list = getBookmarks();
-      list.push({
-        text: "#" + comicNum,
-        url: "#" + comicNum,
+    config.bookmarkBox
+      .querySelector(".markPlace")
+      ?.addEventListener("click", () => {
+        const comicNum = currentComic();
+        const list = getBookmarks();
+        list.push({
+          text: "#" + comicNum,
+          url: "#" + comicNum,
+        });
+        saveBookmarks(list);
       });
-      saveBookmarks(list);
-    });
-    config.bookmarkBox.on("click", ".deleteMark", function (this: HTMLElement) {
-      const index = Number($(this).attr("data-index"));
-      const list = getBookmarks();
-      list.splice(index, 1);
-      saveBookmarks(list);
+    config.bookmarkBox.addEventListener("click", (evt: Event) => {
+      const target = evt.target as HTMLElement;
+      if (target.className.indexOf("deleteMark") >= 0) {
+        const index = Number(target.getAttribute("data-index"));
+        const list = getBookmarks();
+        list.splice(index, 1);
+        saveBookmarks(list);
+      }
     });
 
     if (window.JSON && window.localStorage) {
-      config.bookmarkBox.show();
+      config.bookmarkBox.style.display = "block";
       updateBookmarkList();
     }
   }
