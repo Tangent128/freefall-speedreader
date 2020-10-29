@@ -124,10 +124,10 @@ class ComicTable<T extends MetadataEntry> {
 }
 
 type SpeedreaderConfig<T> = {
-  bookmarkBox?: HTMLElement;
+  bookmarkBox?: string | HTMLElement;
   bookmarkKey?: string;
-  bookmarkList?: HTMLElement;
-  bookmarkTmpl?: HTMLElement;
+  bookmarkList?: string | HTMLElement;
+  bookmarkTmpl?: string | HTMLElement;
   comicContainer: JQuery;
   comicTmpl: JQuery;
   data: T[];
@@ -135,6 +135,24 @@ type SpeedreaderConfig<T> = {
   rowPadding?: number;
   scrollPadding?: number;
 };
+
+function SelectHtml(
+  selector: string | HTMLElement | null | undefined
+): HTMLElement | null {
+  if (selector instanceof HTMLElement) {
+    return selector;
+  } else if (selector == null) {
+    return null;
+  } else if (selector[0] == "<") {
+    const div = document.createElement("div");
+    div.innerHTML = selector;
+    return div.firstElementChild
+      ? (div.removeChild(div.firstElementChild) as HTMLElement)
+      : null;
+  } else {
+    return document.querySelector(selector);
+  }
+}
 
 interface Bookmark {
   text: string;
@@ -235,6 +253,13 @@ function BootSpeedreader<MetadataType extends MetadataEntry>(
   }
 
   /* Setup Bookmarking */
+  const bookmarkBox = SelectHtml(config.bookmarkBox);
+  if (bookmarkBox && !bookmarkBox.parentNode) {
+    // if the bookmark box is inline HTML, add it to the page before we try to query for its list holder.
+    document.body.appendChild(bookmarkBox);
+  }
+  const bookmarkList = SelectHtml(config.bookmarkList);
+  const bookmarkTmpl = SelectHtml(config.bookmarkTmpl);
 
   function getBookmarks(): Bookmark[] {
     return JSON.parse(
@@ -242,7 +267,6 @@ function BootSpeedreader<MetadataType extends MetadataEntry>(
     );
   }
   function updateBookmarkList() {
-    const { bookmarkList, bookmarkTmpl } = config;
     if (!(bookmarkList && bookmarkTmpl)) return;
     bookmarkList.innerHTML = "";
     getBookmarks().forEach((bookmark, i) => {
@@ -277,14 +301,8 @@ function BootSpeedreader<MetadataType extends MetadataEntry>(
     table.render();
   });
 
-  if (
-    config.bookmarkBox &&
-    config.bookmarkList &&
-    config.bookmarkTmpl &&
-    config.bookmarkKey
-  ) {
+  if (bookmarkBox && bookmarkList && bookmarkTmpl && config.bookmarkKey) {
     if (window.addEventListener) {
-      // can't catch this event with jQuery, somehow
       window.addEventListener("storage", function (e) {
         if (e.key == config.bookmarkKey) {
           updateBookmarkList();
@@ -292,18 +310,16 @@ function BootSpeedreader<MetadataType extends MetadataEntry>(
       });
     }
 
-    config.bookmarkBox
-      .querySelector(".markPlace")
-      ?.addEventListener("click", () => {
-        const comicNum = currentComic();
-        const list = getBookmarks();
-        list.push({
-          text: "#" + comicNum,
-          url: "#" + comicNum,
-        });
-        saveBookmarks(list);
+    bookmarkBox.querySelector(".markPlace")?.addEventListener("click", () => {
+      const comicNum = currentComic();
+      const list = getBookmarks();
+      list.push({
+        text: "#" + comicNum,
+        url: "#" + comicNum,
       });
-    config.bookmarkBox.addEventListener("click", (evt: Event) => {
+      saveBookmarks(list);
+    });
+    bookmarkBox.addEventListener("click", (evt: Event) => {
       const target = evt.target as HTMLElement;
       if (target.className.indexOf("deleteMark") >= 0) {
         const index = Number(target.getAttribute("data-index"));
@@ -314,7 +330,7 @@ function BootSpeedreader<MetadataType extends MetadataEntry>(
     });
 
     if (window.JSON && window.localStorage) {
-      config.bookmarkBox.style.display = "block";
+      bookmarkBox.style.display = "block";
       updateBookmarkList();
     }
   }

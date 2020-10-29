@@ -125,13 +125,6 @@
       Tangent.
     </p>
 
-    <div id="bookmarkBox">
-      <div id="bookmarkList"></div>
-      <div class="entry">
-        <button class="markPlace">Save Spot</button>
-      </div>
-    </div>
-
     <div class="tmpl">
       <div class="comic">
         <div class="bg">
@@ -139,11 +132,6 @@
           <a class="num"></a>
           <img />
         </div>
-      </div>
-      <div class="entry">
-        <a class="link"></a>
-        <a class="deleteMark">x</a>
-        <hr />
       </div>
     </div>
 
@@ -192,9 +180,11 @@
           render: render,
 
           bookmarkKey: "/comics/freefall/bookmarks/list",
-          bookmarkTmpl: document.querySelector(".tmpl .entry"),
-          bookmarkBox: document.querySelector("#bookmarkBox"),
-          bookmarkList: document.querySelector("#bookmarkList"),
+          bookmarkTmpl:
+            '<div class="entry"><a class="link"></a><a class="deleteMark">x</a><hr /></div>',
+          bookmarkBox:
+            '<div id="bookmarkBox"><div id="bookmarkList"></div><div class="entry"><button class="markPlace">Save Spot</button></div></div>',
+          bookmarkList: "#bookmarkList",
         });
       }
     </script>
