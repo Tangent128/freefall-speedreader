@@ -186,7 +186,7 @@ function BootSpeedreader<MetadataType extends MetadataEntry>(
 
   /* Setup Flytable */
 
-  const table = setupFlyTable(config.comicContainer);
+  const table = new Flytable(config.comicContainer);
 
   table.scrollPadding = config.scrollPadding || 300;
 

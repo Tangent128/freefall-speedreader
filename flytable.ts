@@ -26,8 +26,6 @@ class Flytable {
   scrollPadding = 10;
 
   /* Public Overrides */
-  public recalculate = function (this: Flytable) {};
-
   public getComponent = function (this: Flytable, _index: number): JQuery {
     return $("<s>no renderer</s>");
   };
@@ -80,7 +78,6 @@ class Flytable {
   private renderSlice(startY: number, endY: number) {
     // prepare table element
     const container = this.container;
-    this.recalculate();
     const height = this.getTotalHeight();
 
     container.css({
@@ -129,68 +126,6 @@ class Flytable {
     const delta = screenY - tableY;
     this.renderSlice(delta, delta + $(window).height());
   }
-
-  /**
-   * utility for displaying datasets of uniform row height
-   * @param renderFunc index of item, jQuery-wrapped node to render to
-   */
-  public simpleDataset(
-    getDataCount: () => number,
-    templateSelector: string | JQuery | HTMLElement,
-    renderFunc: (index: number, node: JQuery) => void
-  ) {
-    let tmpl: JQuery;
-    let rowHeight: number;
-
-    this.recalculate = function () {
-      tmpl = $(templateSelector);
-      rowHeight = tmpl.height();
-    };
-
-    this.getComponent = function (index) {
-      const node = tmpl.clone();
-
-      renderFunc(index, node);
-
-      return node;
-    };
-
-    this.getItemTop = function (index) {
-      return rowHeight * index;
-    };
-
-    this.getItemHeight = function (index) {
-      return rowHeight;
-    };
-
-    this.getTotalHeight = function () {
-      return rowHeight * getDataCount();
-    };
-  }
-
-  /**
-   * utility for displaying array-based datasets
-   * @param renderFunc (item value, jQuery-wrapped node to render to, index of item)
-   */
-  public simpleArray<T>(
-    array: T[],
-    templateSelector: string | JQuery | HTMLElement,
-    renderFunc: (value: T, node: JQuery, index: number) => void
-  ) {
-    this.simpleDataset(
-      function () {
-        return array.length;
-      },
-      templateSelector,
-      function (index, node) {
-        renderFunc(array[index], node, index);
-      }
-    );
-  }
-}
-
-function setupFlyTable(element: JQuery): Flytable {
-  return new Flytable(element);
 }
 
 /*
