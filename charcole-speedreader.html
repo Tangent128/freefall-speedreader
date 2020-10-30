@@ -72,7 +72,7 @@
         margin: 0px;
         border: solid thin #f00;
       }
-      #bookmarkBox .deleteMark {
+      #bookmarkBox [data-delete-mark] {
         color: #f00;
         cursor: pointer;
         float: right;
@@ -102,7 +102,7 @@
     <div id="bookmarkBox">
       <div id="bookmarkList"></div>
       <div class="entry">
-        <button class="markPlace">Save Spot</button>
+        <button data-mark-place>Save Spot</button>
       </div>
     </div>
 
@@ -111,8 +111,8 @@
         <img />
       </div>
       <div class="entry">
-        <a class="link"></a>
-        <a class="deleteMark">x</a>
+        <a href="#"></a>
+        <a data-delete-mark="">x</a>
         <hr />
       </div>
     </div>

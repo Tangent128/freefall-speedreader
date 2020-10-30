@@ -90,7 +90,7 @@
         clear: both;
         margin: 0px;
       }
-      #bookmarkBox .deleteMark {
+      #bookmarkBox [data-delete-mark] {
         color: #f00;
         cursor: pointer;
         float: right;
@@ -181,9 +181,9 @@
 
           bookmarkKey: "/comics/freefall/bookmarks/list",
           bookmarkTmpl:
-            '<div class="entry"><a class="link"></a><a class="deleteMark">x</a><hr /></div>',
+            '<div class="entry"><a href="#"></a><a data-delete-mark="">x</a><hr /></div>',
           bookmarkBox:
-            '<div id="bookmarkBox"><div id="bookmarkList"></div><div class="entry"><button class="markPlace">Save Spot</button></div></div>',
+            '<div id="bookmarkBox"><div id="bookmarkList"></div><div class="entry"><button data-mark-place>Save Spot</button></div></div>',
           bookmarkList: "#bookmarkList",
         });
       }

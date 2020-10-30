@@ -17,6 +17,13 @@
  * @format
  */
 
+// polyfill .matches()
+if (!Element.prototype.matches) {
+  Element.prototype.matches =
+    (Element.prototype as any).msMatchesSelector ||
+    (Element.prototype as any).webkitMatchesSelector;
+}
+
 type MetadataEntry = {
   i: number;
   h: number;
@@ -271,11 +278,13 @@ function BootSpeedreader<MetadataType extends MetadataEntry>(
     bookmarkList.innerHTML = "";
     getBookmarks().forEach((bookmark, i) => {
       const entry = bookmarkTmpl.cloneNode(true) as HTMLElement;
-      const link = entry.querySelector(".link") as HTMLAnchorElement;
+      const link = entry.querySelector("[href]") as HTMLAnchorElement;
       link.href = bookmark.url;
       link.innerText = bookmark.text;
-      const deleteMark = entry.querySelector(".deleteMark") as HTMLElement;
-      deleteMark.setAttribute("data-index", String(i));
+      const deleteMark = entry.querySelector(
+        "[data-delete-mark]"
+      ) as HTMLElement;
+      deleteMark.setAttribute("data-delete-mark", String(i));
       bookmarkList.append(entry);
     });
   }
@@ -310,19 +319,21 @@ function BootSpeedreader<MetadataType extends MetadataEntry>(
       });
     }
 
-    bookmarkBox.querySelector(".markPlace")?.addEventListener("click", () => {
-      const comicNum = currentComic();
-      const list = getBookmarks();
-      list.push({
-        text: "#" + comicNum,
-        url: "#" + comicNum,
-      });
-      saveBookmarks(list);
-    });
     bookmarkBox.addEventListener("click", (evt: Event) => {
       const target = evt.target as HTMLElement;
-      if (target.className.indexOf("deleteMark") >= 0) {
-        const index = Number(target.getAttribute("data-index"));
+
+      if (target.matches("[data-mark-place]")) {
+        const comicNum = currentComic();
+        const list = getBookmarks();
+        list.push({
+          text: "#" + comicNum,
+          url: "#" + comicNum,
+        });
+        saveBookmarks(list);
+      }
+
+      if (target.matches("[data-delete-mark]")) {
+        const index = Number(target.getAttribute("data-delete-mark"));
         const list = getBookmarks();
         list.splice(index, 1);
         saveBookmarks(list);
