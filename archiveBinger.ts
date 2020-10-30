@@ -310,9 +310,16 @@ function BootSpeedreader<MetadataType extends MetadataEntry>(
     table.render();
   });
 
-  if (bookmarkBox && bookmarkList && bookmarkTmpl && config.bookmarkKey) {
+  if (
+    window.JSON &&
+    window.localStorage &&
+    bookmarkBox &&
+    bookmarkList &&
+    bookmarkTmpl &&
+    config.bookmarkKey
+  ) {
     if (window.addEventListener) {
-      window.addEventListener("storage", function (e) {
+      window.addEventListener("storage", (e: StorageEvent) => {
         if (e.key == config.bookmarkKey) {
           updateBookmarkList();
         }
@@ -340,10 +347,7 @@ function BootSpeedreader<MetadataType extends MetadataEntry>(
       }
     });
 
-    if (window.JSON && window.localStorage) {
-      bookmarkBox.style.display = "block";
-      updateBookmarkList();
-    }
+    updateBookmarkList();
   }
 
   /* Kickoff */
