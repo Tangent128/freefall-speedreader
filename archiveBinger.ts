@@ -131,10 +131,6 @@ class ComicTable<T extends MetadataEntry> {
 }
 
 type SpeedreaderConfig<T> = {
-  bookmarkBox?: string | HTMLElement;
-  bookmarkKey?: string;
-  bookmarkList?: string | HTMLElement;
-  bookmarkTmpl?: string | HTMLElement;
   comicContainer: JQuery;
   comicTmpl: JQuery;
   data: T[];
@@ -153,9 +149,10 @@ function SelectHtml(
   } else if (selector[0] == "<") {
     const div = document.createElement("div");
     div.innerHTML = selector;
-    return div.firstElementChild
-      ? (div.removeChild(div.firstElementChild) as HTMLElement)
-      : null;
+    return (
+      (div.firstElementChild?.cloneNode(true) as HTMLElement | undefined) ??
+      null
+    );
   } else {
     return document.querySelector(selector);
   }
@@ -167,7 +164,7 @@ interface Bookmark {
 }
 
 // Load flytable.js and jQuery before this
-function BootSpeedreader<MetadataType extends MetadataEntry>(
+function SetupSpeedreader<MetadataType extends MetadataEntry>(
   config: SpeedreaderConfig<Partial<MetadataType>>
 ): void {
   /* Process Data */
@@ -259,41 +256,6 @@ function BootSpeedreader<MetadataType extends MetadataEntry>(
     }
   }
 
-  /* Setup Bookmarking */
-  const bookmarkBox = SelectHtml(config.bookmarkBox);
-  if (bookmarkBox && !bookmarkBox.parentNode) {
-    // if the bookmark box is inline HTML, add it to the page before we try to query for its list holder.
-    document.body.appendChild(bookmarkBox);
-  }
-  const bookmarkList = SelectHtml(config.bookmarkList);
-  const bookmarkTmpl = SelectHtml(config.bookmarkTmpl);
-
-  function getBookmarks(): Bookmark[] {
-    return JSON.parse(
-      (config.bookmarkKey && localStorage[config.bookmarkKey]) || "[]"
-    );
-  }
-  function updateBookmarkList() {
-    if (!(bookmarkList && bookmarkTmpl)) return;
-    bookmarkList.innerHTML = "";
-    getBookmarks().forEach((bookmark, i) => {
-      const entry = bookmarkTmpl.cloneNode(true) as HTMLElement;
-      const link = entry.querySelector("[href]") as HTMLAnchorElement;
-      link.href = bookmark.url;
-      link.innerText = bookmark.text;
-      const deleteMark = entry.querySelector(
-        "[data-delete-mark]"
-      ) as HTMLElement;
-      deleteMark.setAttribute("data-delete-mark", String(i));
-      bookmarkList.append(entry);
-    });
-  }
-  function saveBookmarks(marks: Bookmark[]) {
-    if (!config.bookmarkKey) return;
-    localStorage[config.bookmarkKey] = JSON.stringify(marks);
-    updateBookmarkList();
-  }
-
   /* Setup Events */
 
   let lastY = 0;
@@ -310,49 +272,111 @@ function BootSpeedreader<MetadataType extends MetadataEntry>(
     table.render();
   });
 
-  if (
-    window.JSON &&
-    window.localStorage &&
-    bookmarkBox &&
-    bookmarkList &&
-    bookmarkTmpl &&
-    config.bookmarkKey
-  ) {
-    if (window.addEventListener) {
-      window.addEventListener("storage", (e: StorageEvent) => {
-        if (e.key == config.bookmarkKey) {
-          updateBookmarkList();
-        }
-      });
-    }
-
-    bookmarkBox.addEventListener("click", (evt: Event) => {
-      const target = evt.target as HTMLElement;
-
-      if (target.matches("[data-mark-place]")) {
-        const comicNum = currentComic();
-        const list = getBookmarks();
-        list.push({
-          text: "#" + comicNum,
-          url: "#" + comicNum,
-        });
-        saveBookmarks(list);
-      }
-
-      if (target.matches("[data-delete-mark]")) {
-        const index = Number(target.getAttribute("data-delete-mark"));
-        const list = getBookmarks();
-        list.splice(index, 1);
-        saveBookmarks(list);
-      }
-    });
-
-    updateBookmarkList();
-  }
-
   /* Kickoff */
   processUpdate();
 }
+
+interface BookmarkConfig {
+  bookmarkBox: string | HTMLElement;
+  bookmarkKey: string;
+  bookmarkList: string | HTMLElement;
+  bookmarkTmpl: string | HTMLElement;
+}
+
+function SetupBookmarkBox(config: BookmarkConfig): void {
+  if (!(window.JSON && window.localStorage)) return;
+
+  /* Resolve the references to the HTML elements the bookmark box uses */
+  const bookmarkBox = SelectHtml(config.bookmarkBox);
+  if (bookmarkBox && !bookmarkBox.parentNode) {
+    // if the bookmark box is inline HTML, add it to the page before we try to query for its list holder.
+    document.body.appendChild(bookmarkBox);
+  }
+  const bookmarkList = SelectHtml(config.bookmarkList);
+  // clone the template so we don't care if it gets wiped out
+  const bookmarkTmpl = SelectHtml(config.bookmarkTmpl)?.cloneNode(
+    true
+  ) as HTMLElement | null;
+
+  /* If we found everything we need, set up the events and render the bookmarks */
+  if (bookmarkBox && bookmarkList && bookmarkTmpl) {
+    const box = new BookmarkBox(bookmarkList, bookmarkTmpl, config.bookmarkKey);
+
+    if (window.addEventListener) {
+      window.addEventListener("storage", e => box.handleStorageEvent(e));
+    }
+
+    bookmarkBox.addEventListener("click", e => box.handleClickEvent(e));
+
+    box.updateBookmarkList();
+  }
+}
+
+class BookmarkBox {
+  constructor(
+    private bookmarkList: HTMLElement,
+    private bookmarkTmpl: HTMLElement,
+    private bookmarkKey: string
+  ) {}
+
+  getBookmarks(): Bookmark[] {
+    try {
+      return JSON.parse(localStorage[this.bookmarkKey]);
+    } catch {
+      return [];
+    }
+  }
+
+  saveBookmarks(marks: Bookmark[]) {
+    localStorage[this.bookmarkKey] = JSON.stringify(marks);
+    this.updateBookmarkList();
+  }
+
+  updateBookmarkList() {
+    this.bookmarkList.innerHTML = "";
+    this.getBookmarks().forEach((bookmark, i) => {
+      const entry = this.bookmarkTmpl.cloneNode(true) as HTMLElement;
+      const link = entry.querySelector("[href]") as HTMLAnchorElement;
+      link.href = bookmark.url;
+      link.innerText = bookmark.text;
+      const deleteMark = entry.querySelector(
+        "[data-delete-mark]"
+      ) as HTMLElement;
+      deleteMark.setAttribute("data-delete-mark", String(i));
+      this.bookmarkList.append(entry);
+    });
+  }
+
+  handleStorageEvent(e: StorageEvent) {
+    if (e.key == this.bookmarkKey) {
+      this.updateBookmarkList();
+    }
+  }
+
+  handleClickEvent(e: MouseEvent) {
+    const target = e.target as HTMLElement;
+
+    if (target.matches("[data-mark-place]")) {
+      const spot = location.hash;
+      if (spot) {
+        const list = this.getBookmarks();
+        list.push({
+          text: spot,
+          url: spot,
+        });
+        this.saveBookmarks(list);
+      }
+    }
+
+    if (target.matches("[data-delete-mark]")) {
+      const index = Number(target.getAttribute("data-delete-mark"));
+      const list = this.getBookmarks();
+      list.splice(index, 1);
+      this.saveBookmarks(list);
+    }
+  }
+}
+
 /*
  * See other stuff I've written at https://github.com/Tangent128/
  */

@@ -506,12 +506,13 @@ var adjusted_comics = COMICS.map(function(record, i) {
 });
 
 // configuration
-BootSpeedreader({
+SetupSpeedreader({
     data: adjusted_comics,
     comicContainer: $("#contain"),
     comicTmpl: $(".tmpl .comic"),
-    render: render,
-
+    render: render
+});
+SetupBookmarkBox({
     bookmarkKey: "/comics/charcole/bookmarks/list",
     bookmarkTmpl: document.querySelector(".tmpl .entry"),
     bookmarkBox: document.querySelector("#bookmarkBox"),

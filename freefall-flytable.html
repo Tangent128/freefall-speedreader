@@ -172,20 +172,21 @@
         $("#moreLink").attr("href", getUrl(lastEntry.i - 1, "fc", ".htm"));
 
         // configuration
-        BootSpeedreader({
+        SetupSpeedreader({
           data: data,
           comicContainer: $("#contain"),
           comicTmpl: $(".tmpl .comic"),
           render: render,
-
-          bookmarkKey: "/comics/freefall/bookmarks/list",
-          bookmarkTmpl:
-            '<div class="entry"><a href="#"></a><a data-delete-mark="">x</a><hr /></div>',
-          bookmarkBox:
-            '<div id="bookmarkBox"><div id="bookmarkList"></div><div class="entry"><button data-mark-place>Save Spot</button></div></div>',
-          bookmarkList: "#bookmarkList",
         });
       }
+      SetupBookmarkBox({
+        bookmarkKey: "/comics/freefall/bookmarks/list",
+        bookmarkTmpl:
+          '<div class="entry"><a href="#"></a><a data-delete-mark="">x</a><hr /></div>',
+        bookmarkBox:
+          '<div id="bookmarkBox"><div id="bookmarkList"></div><div class="entry"><button data-mark-place>Save Spot</button></div></div>',
+        bookmarkList: "#bookmarkList",
+      });
     </script>
     <script src="http://freefall.purrsia.com/fabsdata.js"></script>
   </body>
