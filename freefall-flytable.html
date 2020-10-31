@@ -56,7 +56,7 @@
       .headBlock h1 {
         margin: 0;
       }
-      .small {
+      small {
         font-size: 12px;
       }
       .moreBlock {
@@ -119,10 +119,10 @@
 
     <hr />
 
-    <p class="small">
+    <small>
       Freefall is written and drawn by Mark Stanley. This interface was coded by
       Tangent.
-    </p>
+    </small>
 
     <div class="tmpl">
       <div class="comic">
@@ -132,6 +132,16 @@
           <img />
         </div>
       </div>
+    </div>
+
+    <div id="bookmarkBox">
+      <div id="bookmarkList">
+        <div class="entry">
+          <a href="#"></a><a data-delete-mark="">x</a>
+          <hr />
+        </div>
+      </div>
+      <div class="entry"><button data-mark-place>Save Spot</button></div>
     </div>
 
     <script src="jquery-1.11.0.min.js"></script>
@@ -181,11 +191,9 @@
       }
       SetupBookmarkBox({
         bookmarkKey: "/comics/freefall/bookmarks/list",
-        bookmarkTmpl:
-          '<div class="entry"><a href="#"></a><a data-delete-mark="">x</a><hr /></div>',
-        bookmarkBox:
-          '<div id="bookmarkBox"><div id="bookmarkList"></div><div class="entry"><button data-mark-place>Save Spot</button></div></div>',
+        bookmarkBox: "#bookmarkBox",
         bookmarkList: "#bookmarkList",
+        bookmarkTmpl: "#bookmarkList .entry",
       });
     </script>
     <script src="http://freefall.purrsia.com/fabsdata.js"></script>

@@ -99,7 +99,13 @@
     </div>
 
     <div id="bookmarkBox">
-      <div id="bookmarkList"></div>
+      <div id="bookmarkList">
+        <div class="entry">
+          <a href="#"></a>
+          <a data-delete-mark="">x</a>
+          <hr />
+        </div>
+      </div>
       <div class="entry">
         <button data-mark-place>Save Spot</button>
       </div>
@@ -108,11 +114,6 @@
     <div class="tmpl">
       <div class="comic">
         <img />
-      </div>
-      <div class="entry">
-        <a href="#"></a>
-        <a data-delete-mark="">x</a>
-        <hr />
       </div>
     </div>
 
@@ -514,9 +515,9 @@ SetupSpeedreader({
 });
 SetupBookmarkBox({
     bookmarkKey: "/comics/charcole/bookmarks/list",
-    bookmarkTmpl: document.querySelector(".tmpl .entry"),
     bookmarkBox: document.querySelector("#bookmarkBox"),
-    bookmarkList: document.querySelector("#bookmarkList")
+    bookmarkList: document.querySelector("#bookmarkList"),
+    bookmarkTmpl: document.querySelector("#bookmarkList .entry")
 });
     </script>
   </body>
