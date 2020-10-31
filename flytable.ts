@@ -77,13 +77,11 @@ class Flytable {
 
   private renderSlice(startY: number, endY: number) {
     // prepare table element
-    const container = this.container;
+    const container = this.container[0];
     const height = this.getTotalHeight();
 
-    container.css({
-      position: "relative",
-      height: height,
-    });
+    container.style.position = "relative";
+    container.style.height = height + "px";
 
     // pad region
     startY = Math.max(0, startY - this.scrollPadding);
@@ -111,7 +109,7 @@ class Flytable {
         });
         element.data("flytable-index", index);
         this.includeInSlice(index);
-        container.append(element);
+        this.container.append(element);
         this.inUse.push(element);
       }
 
@@ -121,10 +119,8 @@ class Flytable {
   }
 
   public render() {
-    const screenY = $(window).scrollTop();
-    const tableY = (this.container.offset() as JQueryCoordinates).top;
-    const delta = screenY - tableY;
-    this.renderSlice(delta, delta + $(window).height());
+    const offset = -this.container[0].getBoundingClientRect().top;
+    this.renderSlice(offset, offset + window.innerHeight);
   }
 }
 

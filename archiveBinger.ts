@@ -229,11 +229,11 @@ function SetupSpeedreader<MetadataType extends MetadataEntry>(
 
   function jumpToHash() {
     if (location.hash) {
-      const comicNum = 1 * Number(location.hash.replace("#", ""));
-      const baseY = (config.comicContainer.offset() as JQueryCoordinates).top;
+      const comicNum = Number(location.hash.replace("#", ""));
+      const resetY = config.comicContainer[0].getBoundingClientRect().top;
       const comicY = table.getItemTop(comicNum);
 
-      window.scrollTo(0, baseY + comicY);
+      window.scrollBy(0, resetY + comicY);
 
       // just in case the window.scrollTo()
       // call didn't fire a scroll event
@@ -242,8 +242,7 @@ function SetupSpeedreader<MetadataType extends MetadataEntry>(
   }
 
   function currentComic() {
-    const baseY = (config.comicContainer.offset() as JQueryCoordinates).top;
-    let comicY = window.scrollY - baseY;
+    let comicY = -config.comicContainer[0].getBoundingClientRect().top;
     comicY += 80; // fudge a bit
 
     return table.pixelToIndex(comicY);
