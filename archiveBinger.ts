@@ -131,7 +131,7 @@ class ComicTable<T extends MetadataEntry> {
 }
 
 type SpeedreaderConfig<T> = {
-  comicContainer: JQuery;
+  comicContainer: HTMLElement | string;
   comicTmpl: JQuery;
   data: T[];
   render: (comicDiv: JQuery, index: number, metadataRecord: T) => void;
@@ -182,8 +182,8 @@ function SetupSpeedreader<MetadataType extends MetadataEntry>(
   }
 
   /* Setup Flytable */
-
-  const table = new Flytable(config.comicContainer);
+  const container = SelectHtml(config.comicContainer)!;
+  const table = new Flytable(container);
 
   table.scrollPadding = config.scrollPadding || 300;
 
@@ -230,7 +230,7 @@ function SetupSpeedreader<MetadataType extends MetadataEntry>(
   function jumpToHash() {
     if (location.hash) {
       const comicNum = Number(location.hash.replace("#", ""));
-      const resetY = config.comicContainer[0].getBoundingClientRect().top;
+      const resetY = container.getBoundingClientRect().top;
       const comicY = table.getItemTop(comicNum);
 
       window.scrollBy(0, resetY + comicY);
@@ -242,7 +242,7 @@ function SetupSpeedreader<MetadataType extends MetadataEntry>(
   }
 
   function currentComic() {
-    let comicY = -config.comicContainer[0].getBoundingClientRect().top;
+    let comicY = -container.getBoundingClientRect().top;
     comicY += 80; // fudge a bit
 
     return table.pixelToIndex(comicY);

@@ -46,7 +46,7 @@ class Flytable {
     return ~~(y / this.getItemHeight(0));
   };
 
-  constructor(public container: JQuery) {}
+  constructor(public container: HTMLElement) {}
 
   private destroyOffscreenNodes(startY: number, endY: number) {
     const inUse = this.inUse;
@@ -77,11 +77,10 @@ class Flytable {
 
   private renderSlice(startY: number, endY: number) {
     // prepare table element
-    const container = this.container[0];
     const height = this.getTotalHeight();
 
-    container.style.position = "relative";
-    container.style.height = height + "px";
+    this.container.style.position = "relative";
+    this.container.style.height = height + "px";
 
     // pad region
     startY = Math.max(0, startY - this.scrollPadding);
@@ -109,7 +108,7 @@ class Flytable {
         });
         element.data("flytable-index", index);
         this.includeInSlice(index);
-        this.container.append(element);
+        this.container.append(element[0]);
         this.inUse.push(element);
       }
 
@@ -119,7 +118,7 @@ class Flytable {
   }
 
   public render() {
-    const offset = -this.container[0].getBoundingClientRect().top;
+    const offset = -this.container.getBoundingClientRect().top;
     this.renderSlice(offset, offset + window.innerHeight);
   }
 }
