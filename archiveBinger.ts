@@ -258,7 +258,7 @@ function SetupSpeedreader<MetadataType extends MetadataEntry>(
   /* Setup Events */
 
   let lastY = 0;
-  $(document).on("scroll", function (evt) {
+  document.addEventListener("scroll", () => {
     const scrollY = window.scrollY;
     if (Math.abs(scrollY - lastY) > 50) {
       updateHash();
@@ -266,7 +266,7 @@ function SetupSpeedreader<MetadataType extends MetadataEntry>(
       lastY = scrollY;
     }
   });
-  $(window).on("hashchange", function () {
+  window.addEventListener("hashchange", () => {
     jumpToHash();
     table.render();
   });
