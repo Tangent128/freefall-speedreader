@@ -32,6 +32,12 @@ type MetadataEntry = {
   lastY: number;
 };
 
+type Renderer<T> = (
+  builder: typeof Tmpl,
+  index: number,
+  metadataRecord: T
+) => HTMLElement;
+
 /**
  * Implements the data structure used for relating y-positions to comic metadata.
  */
@@ -133,42 +139,62 @@ class ComicTable<T extends MetadataEntry> {
 /**
  * Implements the logic for determining what slice of comics to render
  */
-class FlytableRenderer {
+class FlytableRenderer<T extends MetadataEntry> {
   inUse = [] as JQuery[];
   sliceStart = 1 / 0;
   sliceEnd = -1;
 
-  /** extra space on either side to render */
-  scrollPadding = 10;
+  constructor(
+    /** the HTML element to render into */
+    public container: HTMLElement,
+    /** comic date; heights + anything the renderer needs, like URLs or widths */
+    private data: ComicTable<T>,
+    /** comic render function */
+    private renderer: Renderer<T>,
+    /** extra space on either side to render */
+    private scrollPadding: number
+  ) {}
 
-  /* Public Overrides */
-  public getComponent = function (
-    this: FlytableRenderer,
-    _index: number
-  ): JQuery {
-    return $("<s>no renderer</s>");
-  };
+  private getComponent(this: FlytableRenderer<T>, comicNum: number): JQuery {
+    const node = this.renderer(Tmpl, comicNum, this.data.getForIndex(comicNum));
 
-  public getItemTop = function (this: FlytableRenderer, index: number): number {
-    return this.getItemHeight(0) * index; // arbitrary value
-  };
+    return $(node);
+  }
 
-  public getItemHeight = function (
-    this: FlytableRenderer,
-    _index: number
+  public getItemTop = function (
+    this: FlytableRenderer<T>,
+    index: number
   ): number {
-    return 16; // arbitrary value
+    const entry = this.data.getForIndex(index);
+
+    const offset = index - entry.i;
+    const y = entry.y + entry.h * offset;
+
+    return y;
   };
 
-  public getTotalHeight = function (this: FlytableRenderer): number {
-    return 160; // arbitrary value
-  };
+  private getItemHeight(index: number): number {
+    return this.data.getForIndex(index).h;
+  }
 
-  public pixelToIndex = function (this: FlytableRenderer, y: number): number {
-    return ~~(y / this.getItemHeight(0));
-  };
+  public pixelToIndex = function (
+    this: FlytableRenderer<T>,
+    y: number
+  ): number {
+    if (y <= 0) {
+      return this.data.getFirstIndex();
+    }
 
-  constructor(public container: HTMLElement) {}
+    const item = this.data.getForY(y);
+    if (item) {
+      const offset = y - item.y;
+      const indexOffset = ~~(offset / item.h);
+
+      return item.i + indexOffset;
+    } else {
+      return this.data.getLastIndex();
+    }
+  };
 
   private destroyOffscreenNodes(startY: number, endY: number) {
     const inUse = this.inUse;
@@ -199,7 +225,7 @@ class FlytableRenderer {
 
   public renderSlice(startY: number, endY: number) {
     // prepare table element
-    const height = this.getTotalHeight();
+    const height = this.data.getTotalHeight();
 
     this.container.style.position = "relative";
     this.container.style.height = height + "px";
@@ -248,11 +274,7 @@ class FlytableRenderer {
 type SpeedreaderConfig<T> = {
   comicContainer: HTMLElement | string;
   data: T[];
-  render: (
-    builder: typeof Tmpl,
-    index: number,
-    metadataRecord: T
-  ) => HTMLElement;
+  render: Renderer<T>;
   rowPadding?: number;
   scrollPadding?: number;
 };
@@ -284,9 +306,8 @@ interface Bookmark {
   url: string;
 }
 
-// Load flytable.js and jQuery before this
-function SetupSpeedreader<MetadataType extends MetadataEntry>(
-  config: SpeedreaderConfig<Partial<MetadataType>>
+function SetupSpeedreader<T extends MetadataEntry>(
+  config: SpeedreaderConfig<Partial<T>>
 ): void {
   /* Process Data */
   const comicTable = new ComicTable(config.data, config.rowPadding || 20);
@@ -304,50 +325,12 @@ function SetupSpeedreader<MetadataType extends MetadataEntry>(
 
   /* Setup Flytable */
   const container = SelectHtml(config.comicContainer)!;
-  const table = new FlytableRenderer(container);
-
-  table.scrollPadding = config.scrollPadding || 300;
-
-  table.getTotalHeight = () => comicTable.getTotalHeight();
-
-  table.getItemTop = function (index) {
-    const entry = comicTable.getForIndex(index);
-
-    const offset = index - entry.i;
-    const y = entry.y + entry.h * offset;
-
-    return y;
-  };
-  table.getItemHeight = function (index) {
-    const entry = comicTable.getForIndex(index);
-    return entry.h;
-  };
-
-  table.pixelToIndex = function (y) {
-    if (y <= 0) {
-      return comicTable.getFirstIndex();
-    }
-
-    const item = comicTable.getForY(y);
-    if (item) {
-      const offset = y - item.y;
-      const indexOffset = ~~(offset / item.h);
-
-      return item.i + indexOffset;
-    } else {
-      return comicTable.getLastIndex();
-    }
-  };
-
-  table.getComponent = function (comicNum) {
-    const node = config.render(
-      Tmpl,
-      comicNum,
-      comicTable.getForIndex(comicNum)
-    );
-
-    return $(node);
-  };
+  const table = new FlytableRenderer<T>(
+    container,
+    comicTable,
+    config.render,
+    config.scrollPadding || 300
+  );
 
   /* Setup Comic-Linking */
 
