@@ -75,7 +75,7 @@ class Flytable {
     this.sliceEnd = Math.max(this.sliceEnd, index);
   }
 
-  private renderSlice(startY: number, endY: number) {
+  public renderSlice(startY: number, endY: number) {
     // prepare table element
     const height = this.getTotalHeight();
 

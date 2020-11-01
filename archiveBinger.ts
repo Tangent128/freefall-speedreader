@@ -224,9 +224,8 @@ function SetupSpeedreader<MetadataType extends MetadataEntry>(
 
       window.scrollBy(0, resetY + comicY);
 
-      // just in case the window.scrollTo()
-      // call didn't fire a scroll event
-      table.render();
+      // scrolling might be async, make sure the landing zone is rendered
+      table.renderSlice(-resetY, -resetY + window.innerHeight);
     }
   }
 
