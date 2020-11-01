@@ -312,17 +312,6 @@ function SetupSpeedreader<T extends MetadataEntry>(
   /* Process Data */
   const comicTable = new ComicTable(config.data, config.rowPadding || 20);
 
-  let initialLoad = true;
-  function processUpdate() {
-    // pre-render ensures the page has correct vertical space usage
-    table.render();
-
-    if (initialLoad) {
-      jumpToHash();
-      initialLoad = false;
-    }
-  }
-
   /* Setup Flytable */
   const container = SelectHtml(config.comicContainer)!;
   const table = new FlytableRenderer<T>(
@@ -333,7 +322,6 @@ function SetupSpeedreader<T extends MetadataEntry>(
   );
 
   /* Setup Comic-Linking */
-
   function jumpToHash() {
     if (location.hash) {
       const comicNum = Number(location.hash.replace("#", ""));
@@ -362,7 +350,6 @@ function SetupSpeedreader<T extends MetadataEntry>(
   }
 
   /* Setup Events */
-
   let lastY = 0;
   document.addEventListener("scroll", () => {
     const scrollY = window.scrollY;
@@ -378,7 +365,9 @@ function SetupSpeedreader<T extends MetadataEntry>(
   });
 
   /* Kickoff */
-  processUpdate();
+  // pre-render ensures the page has correct vertical space usage
+  table.render();
+  jumpToHash();
 }
 
 interface BookmarkConfig {
