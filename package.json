@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "build": "tsc --outDir dist/",
-    "build:parcel": "parcel build flytable.ts archiveBinger.ts --no-minify",
+    "build:parcel": "parcel build archiveBinger.ts --no-minify",
     "lint": "tsc --noEmit"
   },
   "repository": {
