@@ -139,20 +139,9 @@ type SpeedreaderConfig<T> = {
   scrollPadding?: number;
 };
 
-function SelectHtml(
-  selector: string | HTMLElement | null | undefined
-): HTMLElement | null {
+function SelectHtml(selector: string | HTMLElement): HTMLElement | null {
   if (selector instanceof HTMLElement) {
     return selector;
-  } else if (selector == null) {
-    return null;
-  } else if (selector[0] == "<") {
-    const div = document.createElement("div");
-    div.innerHTML = selector;
-    return (
-      (div.firstElementChild?.cloneNode(true) as HTMLElement | undefined) ??
-      null
-    );
   } else {
     return document.querySelector(selector);
   }
