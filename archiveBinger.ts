@@ -132,9 +132,12 @@ class ComicTable<T extends MetadataEntry> {
 
 type SpeedreaderConfig<T> = {
   comicContainer: HTMLElement | string;
-  comicTmpl: JQuery;
   data: T[];
-  render: (comicDiv: JQuery, index: number, metadataRecord: T) => void;
+  render: (
+    builder: typeof Tmpl,
+    index: number,
+    metadataRecord: T
+  ) => HTMLElement;
   rowPadding?: number;
   scrollPadding?: number;
 };
@@ -145,6 +148,20 @@ function SelectHtml(selector: string | HTMLElement): HTMLElement | null {
   } else {
     return document.querySelector(selector);
   }
+}
+
+function Tmpl(
+  element: string | HTMLElement,
+  toSet: [string, Record<string, string>][]
+): HTMLElement {
+  const result = SelectHtml(element)!.cloneNode(true) as HTMLElement;
+  toSet.forEach(edit => {
+    const child = result.querySelector(edit[0]);
+    for (const name in edit[1]) {
+      (child as any)[name] = edit[1][name];
+    }
+  });
+  return result;
 }
 
 interface Bookmark {
@@ -208,10 +225,13 @@ function SetupSpeedreader<MetadataType extends MetadataEntry>(
   };
 
   table.getComponent = function (comicNum) {
-    const node = config.comicTmpl.clone();
-    config.render(node, comicNum, comicTable.getForIndex(comicNum));
+    const node = config.render(
+      Tmpl,
+      comicNum,
+      comicTable.getForIndex(comicNum)
+    );
 
-    return node;
+    return $(node);
   };
 
   /* Setup Comic-Linking */

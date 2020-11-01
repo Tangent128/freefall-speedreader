@@ -486,13 +486,10 @@ var COMICS = [
 ];
 
 // comic row layout
-function render(node, index, record) {
-    node.find(".num").text(record.i);
-    node.find("img")
-        .attr("width", record.w)
-        .attr("height", record.h)
-        .attr("src", "http:"+record.f)
-    ;
+function render(tmpl, index, record) {
+  return tmpl(".tmpl .comic", [
+    ["img", { src: "http:"+record.f, width: record.w, height: record.h }]
+  ]);
 };
 
 // resize comics to 900px width
@@ -510,7 +507,6 @@ var adjusted_comics = COMICS.map(function(record, i) {
 SetupSpeedreader({
     data: adjusted_comics,
     comicContainer: "#contain",
-    comicTmpl: $(".tmpl .comic"),
     render: render
 });
 SetupBookmarkBox({

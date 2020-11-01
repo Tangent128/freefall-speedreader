@@ -127,7 +127,6 @@
     <div class="tmpl">
       <div class="comic">
         <div class="bg">
-          <span class="dbg"></span>
           <a class="num"></a>
           <img />
         </div>
@@ -171,21 +170,23 @@
         }
 
         // comic row layout
-        function render(node, index, record) {
+        function render(tmpl, index, record) {
           var imgUrl = getUrl(index, record.prefix, record.ext);
           var pageUrl = getUrl(index, record.prefix, ".htm");
-          node.find(".num").text(index).attr("href", pageUrl);
-          node.find("img").attr("src", imgUrl);
+
+          return tmpl(".tmpl .comic", [
+            ["a", { href: pageUrl, innerText: index }],
+            ["img", { src: imgUrl }],
+          ]);
         }
 
         var lastEntry = data[data.length - 1];
-        $("#moreLink").attr("href", getUrl(lastEntry.i - 1, "fc", ".htm"));
+        SelectHtml("#moreLink").href = getUrl(lastEntry.i - 1, "fc", ".htm");
 
         // configuration
         SetupSpeedreader({
           data: data,
           comicContainer: "#contain",
-          comicTmpl: $(".tmpl .comic"),
           render: render,
         });
       }
