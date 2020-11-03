@@ -140,7 +140,7 @@ class ComicTable<T extends MetadataEntry> {
  * Implements the logic for determining what slice of comics to render
  */
 class FlytableRenderer<T extends MetadataEntry> {
-  inUse = [] as JQuery[];
+  inUse: HTMLElement[] = [];
   sliceStart = 1 / 0;
   sliceEnd = -1;
 
@@ -155,10 +155,8 @@ class FlytableRenderer<T extends MetadataEntry> {
     private scrollPadding: number
   ) {}
 
-  private getComponent(this: FlytableRenderer<T>, comicNum: number): JQuery {
-    const node = this.renderer(Tmpl, comicNum, this.data.getForIndex(comicNum));
-
-    return $(node);
+  private getComponent(comicNum: number): HTMLElement {
+    return this.renderer(Tmpl, comicNum, this.data.getForIndex(comicNum));
   }
 
   public getItemTop = function (
@@ -198,13 +196,13 @@ class FlytableRenderer<T extends MetadataEntry> {
 
   private destroyOffscreenNodes(startY: number, endY: number) {
     const inUse = this.inUse;
-    const stillInUse: JQuery[] = [];
+    const stillInUse: HTMLElement[] = [];
 
     const firstVisible = this.pixelToIndex(startY);
     const lastVisible = this.pixelToIndex(endY);
 
     inUse.forEach(element => {
-      const index = element.data("flytable-index");
+      const index = Number(element.getAttribute("flytable-index"));
 
       if (index < firstVisible || index > lastVisible) {
         element.remove();
@@ -247,16 +245,16 @@ class FlytableRenderer<T extends MetadataEntry> {
 
       if (index < existingSliceStart || index > existingSliceEnd) {
         const element = this.getComponent(index);
-        element.css({
-          position: "absolute",
-          left: "0",
-          right: "0",
-          top: y,
-          height: h,
-        });
-        element.data("flytable-index", index);
+
+        element.style.position = "absolute";
+        element.style.left = "0px";
+        element.style.right = "0px";
+        element.style.top = y + "px";
+        element.style.height = h + "px";
+
+        element.setAttribute("flytable-index", String(index));
         this.includeInSlice(index);
-        this.container.append(element[0]);
+        this.container.appendChild(element);
         this.inUse.push(element);
       }
 
