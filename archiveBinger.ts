@@ -326,10 +326,13 @@ function SetupSpeedreader<T extends MetadataEntry>(
       const resetY = container.getBoundingClientRect().top;
       const comicY = table.getItemTop(comicNum);
 
-      window.scrollBy(0, resetY + comicY);
+      // this shouldn't be necessary, but seems delaying a tick before scrolling is a little more reliable
+      window.setTimeout(() => {
+        window.scrollBy(0, resetY + comicY);
 
-      // scrolling might be async, make sure the landing zone is rendered
-      table.renderSlice(-resetY, -resetY + window.innerHeight);
+        // make sure the landing zone is rendered
+        table.renderSlice(-resetY, -resetY + window.innerHeight);
+      }, 0);
     }
   }
 
