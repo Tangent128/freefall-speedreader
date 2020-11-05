@@ -9,21 +9,13 @@
         background: #ffcc99 url(http://freefall.purrsia.com/bkgd.gif);
         font-size: 16px;
       }
-      .tmpl {
+      .template {
         display: none;
       }
 
       /* comic instance CSS */
       .comic {
         width: 1100px;
-      }
-      .comic .bg {
-        position: absolute;
-        display: block;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
       }
       .comic .num {
         position: absolute;
@@ -123,12 +115,10 @@
       Tangent.
     </small>
 
-    <div class="tmpl">
+    <div class="template">
       <div class="comic">
-        <div class="bg">
-          <a class="num"></a>
-          <img />
-        </div>
+        <a class="num"></a>
+        <img />
       </div>
     </div>
 
@@ -167,11 +157,11 @@
         }
 
         // comic row layout
-        function render(tmpl, index, record) {
+        function render(template, index, record) {
           var imgUrl = getUrl(index, record.prefix, record.ext);
           var pageUrl = getUrl(index, record.prefix, ".htm");
 
-          return tmpl(".tmpl .comic", [
+          return template(".template .comic", [
             ["a", { href: pageUrl, innerText: index }],
             ["img", { src: imgUrl }]
           ]);

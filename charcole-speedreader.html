@@ -13,7 +13,7 @@
         width: 900px;
         padding: 0;
       }
-      .tmpl {
+      .template {
         display: none;
       }
 
@@ -111,7 +111,7 @@
       </div>
     </div>
 
-    <div class="tmpl">
+    <div class="template">
       <div class="comic">
         <img />
       </div>
@@ -484,8 +484,8 @@ var COMICS = [
 ];
 
 // comic row layout
-function render(tmpl, index, record) {
-  return tmpl(".tmpl .comic", [
+function render(template, index, record) {
+  return template(".template .comic", [
     ["img", { src: "http:"+record.f, width: record.w, height: record.h }]
   ]);
 };
