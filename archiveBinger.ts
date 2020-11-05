@@ -32,11 +32,7 @@ type MetadataEntry = {
   lastY: number;
 };
 
-type Renderer<T> = (
-  builder: typeof Tmpl,
-  index: number,
-  metadataRecord: T
-) => HTMLElement;
+type Renderer<T> = (index: number, metadataRecord: T) => HTMLElement;
 
 /**
  * Implements the data structure used for relating y-positions to comic metadata.
@@ -156,7 +152,7 @@ class FlytableRenderer<T extends MetadataEntry> {
   ) {}
 
   private getComponent(comicNum: number): HTMLElement {
-    return this.renderer(Tmpl, comicNum, this.data.getForIndex(comicNum));
+    return this.renderer(comicNum, this.data.getForIndex(comicNum));
   }
 
   public getItemTop = function (
@@ -285,7 +281,7 @@ function SelectHtml(selector: string | HTMLElement): HTMLElement | null {
   }
 }
 
-function Tmpl(
+function FillInTemplate(
   element: string | HTMLElement,
   toSet: [string, Record<string, string>][]
 ): HTMLElement {

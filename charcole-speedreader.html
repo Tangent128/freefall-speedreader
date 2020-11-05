@@ -484,8 +484,8 @@ var COMICS = [
 ];
 
 // comic row layout
-function render(template, index, record) {
-  return template(".template .comic", [
+function render(index, record) {
+  return FillInTemplate(".template .comic", [
     ["img", { src: "http:"+record.f, width: record.w, height: record.h }]
   ]);
 };

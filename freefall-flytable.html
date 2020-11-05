@@ -157,11 +157,11 @@
         }
 
         // comic row layout
-        function render(template, index, record) {
+        function render(index, record) {
           var imgUrl = getUrl(index, record.prefix, record.ext);
           var pageUrl = getUrl(index, record.prefix, ".htm");
 
-          return template(".template .comic", [
+          return FillInTemplate(".template .comic", [
             ["a", { href: pageUrl, innerText: index }],
             ["img", { src: imgUrl }]
           ]);
