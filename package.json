@@ -18,7 +18,6 @@
   },
   "homepage": "https://github.com/Tangent128/freefall-speedreader#readme",
   "devDependencies": {
-    "@types/jquery": "1.10",
     "typescript": "^3.9.7"
   }
 }
