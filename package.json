@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "description": "",
   "scripts": {
-    "build": "tsc --outDir dist/",
+    "build": "tsc",
     "build:parcel": "parcel build archiveBinger.ts --no-minify",
     "lint": "tsc --noEmit"
   },
