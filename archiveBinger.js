@@ -158,19 +158,17 @@ var FlytableRenderer = /** @class */ (function () {
         return this.data.getForIndex(index).h;
     };
     FlytableRenderer.prototype.destroyOffscreenNodes = function (startY, endY) {
-        var stillInUse = [];
         var firstVisible = this.pixelToIndex(startY);
         var lastVisible = this.pixelToIndex(endY);
-        this.inUse.forEach(function (element) {
-            if (element.comicIndex < firstVisible ||
-                element.comicIndex > lastVisible) {
-                element.html.remove();
+        this.inUse = this.inUse.filter(function (_a) {
+            var _b;
+            var comicIndex = _a.comicIndex, html = _a.html;
+            var keeping = comicIndex >= firstVisible && comicIndex <= lastVisible;
+            if (!keeping) {
+                (_b = html.parentNode) === null || _b === void 0 ? void 0 : _b.removeChild(html);
             }
-            else {
-                stillInUse.push(element);
-            }
+            return keeping;
         });
-        this.inUse = stillInUse;
         this.sliceStart = Math.max(firstVisible, this.sliceStart);
         this.sliceEnd = Math.min(this.sliceEnd, lastVisible);
     };

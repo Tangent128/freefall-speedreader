@@ -191,23 +191,17 @@ class FlytableRenderer<T extends MetadataEntry> {
   };
 
   private destroyOffscreenNodes(startY: number, endY: number) {
-    const stillInUse: { html: HTMLElement; comicIndex: number }[] = [];
-
     const firstVisible = this.pixelToIndex(startY);
     const lastVisible = this.pixelToIndex(endY);
 
-    this.inUse.forEach(element => {
-      if (
-        element.comicIndex < firstVisible ||
-        element.comicIndex > lastVisible
-      ) {
-        element.html.remove();
-      } else {
-        stillInUse.push(element);
+    this.inUse = this.inUse.filter(({ comicIndex, html }) => {
+      const keeping = comicIndex >= firstVisible && comicIndex <= lastVisible;
+      if (!keeping) {
+        html.parentNode?.removeChild(html);
       }
+      return keeping;
     });
 
-    this.inUse = stillInUse;
     this.sliceStart = Math.max(firstVisible, this.sliceStart);
     this.sliceEnd = Math.min(this.sliceEnd, lastVisible);
   }
