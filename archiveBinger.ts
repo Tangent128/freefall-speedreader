@@ -136,7 +136,7 @@ class ComicTable<T extends MetadataEntry> {
  * Implements the logic for determining what slice of comics to render
  */
 class FlytableRenderer<T extends MetadataEntry> {
-  inUse: HTMLElement[] = [];
+  inUse: { html: HTMLElement; comicIndex: number }[] = [];
   sliceStart = 1 / 0;
   sliceEnd = -1;
 
@@ -191,17 +191,17 @@ class FlytableRenderer<T extends MetadataEntry> {
   };
 
   private destroyOffscreenNodes(startY: number, endY: number) {
-    const inUse = this.inUse;
-    const stillInUse: HTMLElement[] = [];
+    const stillInUse: { html: HTMLElement; comicIndex: number }[] = [];
 
     const firstVisible = this.pixelToIndex(startY);
     const lastVisible = this.pixelToIndex(endY);
 
-    inUse.forEach(element => {
-      const index = Number(element.getAttribute("flytable-index"));
-
-      if (index < firstVisible || index > lastVisible) {
-        element.remove();
+    this.inUse.forEach(element => {
+      if (
+        element.comicIndex < firstVisible ||
+        element.comicIndex > lastVisible
+      ) {
+        element.html.remove();
       } else {
         stillInUse.push(element);
       }
@@ -232,15 +232,15 @@ class FlytableRenderer<T extends MetadataEntry> {
     this.destroyOffscreenNodes(startY, endY);
 
     // loop through visible blocks
-    let index = this.pixelToIndex(startY);
+    let comicIndex = this.pixelToIndex(startY);
     const existingSliceStart = this.sliceStart;
     const existingSliceEnd = this.sliceEnd;
 
-    for (let y = this.getItemTop(index); y < endY; ) {
-      const h = this.getItemHeight(index);
+    for (let y = this.getItemTop(comicIndex); y < endY; ) {
+      const h = this.getItemHeight(comicIndex);
 
-      if (index < existingSliceStart || index > existingSliceEnd) {
-        const element = this.getComponent(index);
+      if (comicIndex < existingSliceStart || comicIndex > existingSliceEnd) {
+        const element = this.getHtml(comicIndex);
 
         element.style.position = "absolute";
         element.style.left = "0px";
@@ -248,13 +248,12 @@ class FlytableRenderer<T extends MetadataEntry> {
         element.style.top = y + "px";
         element.style.height = h + "px";
 
-        element.setAttribute("flytable-index", String(index));
-        this.includeInSlice(index);
+        this.includeInSlice(comicIndex);
         this.container.appendChild(element);
-        this.inUse.push(element);
+        this.inUse.push({ html: element, comicIndex });
       }
 
-      index++;
+      comicIndex++;
       y += h;
     }
   }
