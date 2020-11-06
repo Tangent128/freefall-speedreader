@@ -151,7 +151,7 @@ class FlytableRenderer<T extends MetadataEntry> {
     private scrollPadding: number
   ) {}
 
-  private getComponent(comicNum: number): HTMLElement {
+  private getHtml(comicNum: number): HTMLElement {
     return this.renderer(comicNum, this.data.getForIndex(comicNum));
   }
 
@@ -182,7 +182,7 @@ class FlytableRenderer<T extends MetadataEntry> {
     const item = this.data.getForY(y);
     if (item) {
       const offset = y - item.y;
-      const indexOffset = ~~(offset / item.h);
+      const indexOffset = Math.floor(offset / item.h);
 
       return item.i + indexOffset;
     } else {
@@ -218,20 +218,21 @@ class FlytableRenderer<T extends MetadataEntry> {
   }
 
   public renderSlice(startY: number, endY: number) {
-    // prepare table element
+    // give the page-sized container that holds all the comics the correct size
     const height = this.data.getTotalHeight();
-
-    this.container.style.position = "relative";
     this.container.style.height = height + "px";
 
-    // pad region
+    // make sure that the comic container is the reference point for comic locations
+    this.container.style.position = "relative";
+
+    // add padding to the "on-screen" region so comics can load before they're scrolled in
     startY = Math.max(0, startY - this.scrollPadding);
     endY = Math.min(endY + this.scrollPadding, height);
 
-    // clear offscreen nodes
+    // clear comics that no longer need to be on-screen
     this.destroyOffscreenNodes(startY, endY);
 
-    // loop through visible blocks
+    // loop through each of the comics that should be on-screen right now
     let comicIndex = this.pixelToIndex(startY);
     const existingSliceStart = this.sliceStart;
     const existingSliceEnd = this.sliceEnd;
@@ -239,9 +240,11 @@ class FlytableRenderer<T extends MetadataEntry> {
     for (let y = this.getItemTop(comicIndex); y < endY; ) {
       const h = this.getItemHeight(comicIndex);
 
+      // if this comic isn't already onscreen, render it
       if (comicIndex < existingSliceStart || comicIndex > existingSliceEnd) {
         const element = this.getHtml(comicIndex);
 
+        // place the comic at the correct location within the comic container
         element.style.position = "absolute";
         element.style.left = "0px";
         element.style.right = "0px";
@@ -253,6 +256,7 @@ class FlytableRenderer<T extends MetadataEntry> {
         this.inUse.push({ html: element, comicIndex });
       }
 
+      // move on to the next comic
       comicIndex++;
       y += h;
     }

@@ -143,7 +143,7 @@ var FlytableRenderer = /** @class */ (function () {
             var item = this.data.getForY(y);
             if (item) {
                 var offset = y - item.y;
-                var indexOffset = ~~(offset / item.h);
+                var indexOffset = Math.floor(offset / item.h);
                 return item.i + indexOffset;
             }
             else {
@@ -151,21 +151,20 @@ var FlytableRenderer = /** @class */ (function () {
             }
         };
     }
-    FlytableRenderer.prototype.getComponent = function (comicNum) {
+    FlytableRenderer.prototype.getHtml = function (comicNum) {
         return this.renderer(comicNum, this.data.getForIndex(comicNum));
     };
     FlytableRenderer.prototype.getItemHeight = function (index) {
         return this.data.getForIndex(index).h;
     };
     FlytableRenderer.prototype.destroyOffscreenNodes = function (startY, endY) {
-        var inUse = this.inUse;
         var stillInUse = [];
         var firstVisible = this.pixelToIndex(startY);
         var lastVisible = this.pixelToIndex(endY);
-        inUse.forEach(function (element) {
-            var index = Number(element.getAttribute("flytable-index"));
-            if (index < firstVisible || index > lastVisible) {
-                element.remove();
+        this.inUse.forEach(function (element) {
+            if (element.comicIndex < firstVisible ||
+                element.comicIndex > lastVisible) {
+                element.html.remove();
             }
             else {
                 stillInUse.push(element);
@@ -180,34 +179,37 @@ var FlytableRenderer = /** @class */ (function () {
         this.sliceEnd = Math.max(this.sliceEnd, index);
     };
     FlytableRenderer.prototype.renderSlice = function (startY, endY) {
-        // prepare table element
+        // give the page-sized container that holds all the comics the correct size
         var height = this.data.getTotalHeight();
-        this.container.style.position = "relative";
         this.container.style.height = height + "px";
-        // pad region
+        // make sure that the comic container is the reference point for comic locations
+        this.container.style.position = "relative";
+        // add padding to the "on-screen" region so comics can load before they're scrolled in
         startY = Math.max(0, startY - this.scrollPadding);
         endY = Math.min(endY + this.scrollPadding, height);
-        // clear offscreen nodes
+        // clear comics that no longer need to be on-screen
         this.destroyOffscreenNodes(startY, endY);
-        // loop through visible blocks
-        var index = this.pixelToIndex(startY);
+        // loop through each of the comics that should be on-screen right now
+        var comicIndex = this.pixelToIndex(startY);
         var existingSliceStart = this.sliceStart;
         var existingSliceEnd = this.sliceEnd;
-        for (var y = this.getItemTop(index); y < endY;) {
-            var h = this.getItemHeight(index);
-            if (index < existingSliceStart || index > existingSliceEnd) {
-                var element = this.getComponent(index);
+        for (var y = this.getItemTop(comicIndex); y < endY;) {
+            var h = this.getItemHeight(comicIndex);
+            // if this comic isn't already onscreen, render it
+            if (comicIndex < existingSliceStart || comicIndex > existingSliceEnd) {
+                var element = this.getHtml(comicIndex);
+                // place the comic at the correct location within the comic container
                 element.style.position = "absolute";
                 element.style.left = "0px";
                 element.style.right = "0px";
                 element.style.top = y + "px";
                 element.style.height = h + "px";
-                element.setAttribute("flytable-index", String(index));
-                this.includeInSlice(index);
+                this.includeInSlice(comicIndex);
                 this.container.appendChild(element);
-                this.inUse.push(element);
+                this.inUse.push({ html: element, comicIndex: comicIndex });
             }
-            index++;
+            // move on to the next comic
+            comicIndex++;
             y += h;
         }
     };
