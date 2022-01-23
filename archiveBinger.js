@@ -70,6 +70,11 @@ var ComicTable = /** @class */ (function () {
         var finalEntry = this.comics[this.comics.length - 1];
         finalEntry.last = finalEntry.i + 1;
         finalEntry.lastY = finalEntry.y + finalEntry.h;
+        // establish total range of comics
+        this.fullRange = {
+            from: this.comics[0].i,
+            to: this.comics[this.comics.length - 1].i,
+        };
     }
     ComicTable.prototype.search = function (start, end, fieldStart, fieldEnd, value) {
         var midIndex = (start + end) >> 1;
@@ -99,14 +104,19 @@ var ComicTable = /** @class */ (function () {
     ComicTable.prototype.getForY = function (y) {
         return this.search(0, this.comics.length, "y", "lastY", y);
     };
-    ComicTable.prototype.getFirstIndex = function () {
-        return this.comics[0].i;
+    ComicTable.prototype.getItemTop = function (index) {
+        var entry = this.getForIndex(index);
+        var offset = index - entry.i;
+        var y = entry.y + entry.h * offset;
+        return y;
     };
-    ComicTable.prototype.getLastIndex = function () {
-        return this.comics[this.comics.length - 1].i;
+    ComicTable.prototype.getItemHeight = function (index) {
+        return this.getForIndex(index).h;
     };
-    ComicTable.prototype.getTotalHeight = function () {
-        return this.comics[this.comics.length - 1].lastY;
+    ComicTable.prototype.getRangeHeight = function (range) {
+        var topY = this.getForIndex(range.from).y;
+        var bottomY = this.getForIndex(range.to).lastY;
+        return bottomY - topY;
     };
     return ComicTable;
 }());
@@ -130,15 +140,9 @@ var FlytableRenderer = /** @class */ (function () {
         this.inUse = [];
         this.sliceStart = 1 / 0;
         this.sliceEnd = -1;
-        this.getItemTop = function (index) {
-            var entry = this.data.getForIndex(index);
-            var offset = index - entry.i;
-            var y = entry.y + entry.h * offset;
-            return y;
-        };
         this.pixelToIndex = function (y) {
             if (y <= 0) {
-                return this.data.getFirstIndex();
+                return this.data.fullRange.from;
             }
             var item = this.data.getForY(y);
             if (item) {
@@ -147,15 +151,12 @@ var FlytableRenderer = /** @class */ (function () {
                 return item.i + indexOffset;
             }
             else {
-                return this.data.getLastIndex();
+                return this.data.fullRange.to;
             }
         };
     }
     FlytableRenderer.prototype.getHtml = function (comicNum) {
         return this.renderer(comicNum, this.data.getForIndex(comicNum));
-    };
-    FlytableRenderer.prototype.getItemHeight = function (index) {
-        return this.data.getForIndex(index).h;
     };
     FlytableRenderer.prototype.destroyOffscreenNodes = function (startY, endY) {
         var firstVisible = this.pixelToIndex(startY);
@@ -178,7 +179,7 @@ var FlytableRenderer = /** @class */ (function () {
     };
     FlytableRenderer.prototype.renderSlice = function (startY, endY) {
         // give the page-sized container that holds all the comics the correct size
-        var height = this.data.getTotalHeight();
+        var height = this.data.getRangeHeight(this.data.fullRange);
         this.container.style.height = height + "px";
         // make sure that the comic container is the reference point for comic locations
         this.container.style.position = "relative";
@@ -191,8 +192,8 @@ var FlytableRenderer = /** @class */ (function () {
         var comicIndex = this.pixelToIndex(startY);
         var existingSliceStart = this.sliceStart;
         var existingSliceEnd = this.sliceEnd;
-        for (var y = this.getItemTop(comicIndex); y < endY;) {
-            var h = this.getItemHeight(comicIndex);
+        for (var y = this.data.getItemTop(comicIndex); y < endY;) {
+            var h = this.data.getItemHeight(comicIndex);
             // if this comic isn't already onscreen, render it
             if (comicIndex < existingSliceStart || comicIndex > existingSliceEnd) {
                 var element = this.getHtml(comicIndex);
@@ -246,7 +247,7 @@ function SetupSpeedreader(config) {
         if (location.hash) {
             var comicNum = Number(location.hash.replace("#", ""));
             var resetY_1 = container.getBoundingClientRect().top;
-            var comicY_1 = table.getItemTop(comicNum);
+            var comicY_1 = comicTable.getItemTop(comicNum);
             // this shouldn't be necessary, but seems delaying a tick before scrolling is a little more reliable
             window.setTimeout(function () {
                 window.scrollBy(0, resetY_1 + comicY_1);

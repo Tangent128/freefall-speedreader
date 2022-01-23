@@ -35,10 +35,19 @@ type MetadataEntry = {
 type Renderer<T> = (index: number, metadataRecord: T) => HTMLElement;
 
 /**
+ * Inclusive range indicating a subset of comics to display.
+ */
+type ComicRange = {
+  readonly from: number;
+  readonly to: number;
+};
+
+/**
  * Implements the data structure used for relating y-positions to comic metadata.
  */
 class ComicTable<T extends MetadataEntry> {
   private comics: T[] = [];
+  public readonly fullRange: ComicRange;
 
   /**
    * "Cook" the possibly-compacted version of the data table
@@ -81,6 +90,12 @@ class ComicTable<T extends MetadataEntry> {
     const finalEntry = this.comics[this.comics.length - 1];
     finalEntry.last = finalEntry.i + 1;
     finalEntry.lastY = finalEntry.y + finalEntry.h;
+
+    // establish total range of comics
+    this.fullRange = {
+      from: this.comics[0].i,
+      to: this.comics[this.comics.length - 1].i,
+    };
   }
 
   private search<Key1 extends keyof T, Key2 extends keyof T>(
@@ -119,16 +134,23 @@ class ComicTable<T extends MetadataEntry> {
     return this.search(0, this.comics.length, "y", "lastY", y);
   }
 
-  public getFirstIndex(): number {
-    return this.comics[0].i;
+  public getItemTop(index: number): number {
+    const entry = this.getForIndex(index);
+
+    const offset = index - entry.i;
+    const y = entry.y + entry.h * offset;
+
+    return y;
   }
 
-  public getLastIndex(): number {
-    return this.comics[this.comics.length - 1].i;
+  public getItemHeight(index: number): number {
+    return this.getForIndex(index).h;
   }
 
-  public getTotalHeight(): number {
-    return this.comics[this.comics.length - 1].lastY;
+  public getRangeHeight(range: ComicRange): number {
+    const topY = this.getForIndex(range.from).y;
+    const bottomY = this.getForIndex(range.to).lastY;
+    return bottomY - topY;
   }
 }
 
@@ -143,7 +165,7 @@ class FlytableRenderer<T extends MetadataEntry> {
   constructor(
     /** the HTML element to render into */
     public container: HTMLElement,
-    /** comic date; heights + anything the renderer needs, like URLs or widths */
+    /** comic data; heights + anything the renderer needs, like URLs or widths */
     private data: ComicTable<T>,
     /** comic render function */
     private renderer: Renderer<T>,
@@ -155,28 +177,12 @@ class FlytableRenderer<T extends MetadataEntry> {
     return this.renderer(comicNum, this.data.getForIndex(comicNum));
   }
 
-  public getItemTop = function (
-    this: FlytableRenderer<T>,
-    index: number
-  ): number {
-    const entry = this.data.getForIndex(index);
-
-    const offset = index - entry.i;
-    const y = entry.y + entry.h * offset;
-
-    return y;
-  };
-
-  private getItemHeight(index: number): number {
-    return this.data.getForIndex(index).h;
-  }
-
   public pixelToIndex = function (
     this: FlytableRenderer<T>,
     y: number
   ): number {
     if (y <= 0) {
-      return this.data.getFirstIndex();
+      return this.data.fullRange.from;
     }
 
     const item = this.data.getForY(y);
@@ -186,7 +192,7 @@ class FlytableRenderer<T extends MetadataEntry> {
 
       return item.i + indexOffset;
     } else {
-      return this.data.getLastIndex();
+      return this.data.fullRange.to;
     }
   };
 
@@ -213,7 +219,7 @@ class FlytableRenderer<T extends MetadataEntry> {
 
   public renderSlice(startY: number, endY: number) {
     // give the page-sized container that holds all the comics the correct size
-    const height = this.data.getTotalHeight();
+    const height = this.data.getRangeHeight(this.data.fullRange);
     this.container.style.height = height + "px";
 
     // make sure that the comic container is the reference point for comic locations
@@ -231,8 +237,8 @@ class FlytableRenderer<T extends MetadataEntry> {
     const existingSliceStart = this.sliceStart;
     const existingSliceEnd = this.sliceEnd;
 
-    for (let y = this.getItemTop(comicIndex); y < endY; ) {
-      const h = this.getItemHeight(comicIndex);
+    for (let y = this.data.getItemTop(comicIndex); y < endY; ) {
+      const h = this.data.getItemHeight(comicIndex);
 
       // if this comic isn't already onscreen, render it
       if (comicIndex < existingSliceStart || comicIndex > existingSliceEnd) {
@@ -317,7 +323,7 @@ function SetupSpeedreader<T extends MetadataEntry>(
     if (location.hash) {
       const comicNum = Number(location.hash.replace("#", ""));
       const resetY = container.getBoundingClientRect().top;
-      const comicY = table.getItemTop(comicNum);
+      const comicY = comicTable.getItemTop(comicNum);
 
       // this shouldn't be necessary, but seems delaying a tick before scrolling is a little more reliable
       window.setTimeout(() => {
