@@ -101,14 +101,29 @@ var ComicTable = /** @class */ (function () {
     ComicTable.prototype.getForIndex = function (index) {
         return this.search(0, this.comics.length, "i", "last", index);
     };
-    ComicTable.prototype.getForY = function (y) {
-        return this.search(0, this.comics.length, "y", "lastY", y);
-    };
     ComicTable.prototype.getAbsItemTop = function (index) {
         var entry = this.getForIndex(index);
         var offset = index - entry.i;
         var y = entry.y + entry.h * offset;
         return y;
+    };
+    ComicTable.prototype.getForY = function (y) {
+        return this.search(0, this.comics.length, "y", "lastY", y);
+    };
+    ComicTable.prototype.pixelToIndex = function (range, y) {
+        if (y <= 0) {
+            return range.from;
+        }
+        var fromY = this.getAbsItemTop(range.from);
+        var item = this.getForY(fromY + y);
+        if (item) {
+            var offset = fromY + y - item.y;
+            var indexOffset = Math.floor(offset / item.h);
+            return item.i + indexOffset;
+        }
+        else {
+            return range.to;
+        }
     };
     ComicTable.prototype.getItemTop = function (range, index) {
         return this.getAbsItemTop(index) - this.getAbsItemTop(range.from);
@@ -141,27 +156,13 @@ var FlytableRenderer = /** @class */ (function () {
         this.inUse = [];
         this.sliceStart = 1 / 0;
         this.sliceEnd = -1;
-        this.pixelToIndex = function (y) {
-            if (y <= 0) {
-                return this.data.fullRange.from;
-            }
-            var item = this.data.getForY(y);
-            if (item) {
-                var offset = y - item.y;
-                var indexOffset = Math.floor(offset / item.h);
-                return item.i + indexOffset;
-            }
-            else {
-                return this.data.fullRange.to;
-            }
-        };
     }
     FlytableRenderer.prototype.getHtml = function (comicNum) {
         return this.renderer(comicNum, this.data.getForIndex(comicNum));
     };
-    FlytableRenderer.prototype.destroyOffscreenNodes = function (startY, endY) {
-        var firstVisible = this.pixelToIndex(startY);
-        var lastVisible = this.pixelToIndex(endY);
+    FlytableRenderer.prototype.destroyOffscreenNodes = function (range, startY, endY) {
+        var firstVisible = this.data.pixelToIndex(range, startY);
+        var lastVisible = this.data.pixelToIndex(range, endY);
         this.inUse = this.inUse.filter(function (_a) {
             var _b;
             var comicIndex = _a.comicIndex, html = _a.html;
@@ -188,9 +189,9 @@ var FlytableRenderer = /** @class */ (function () {
         startY = Math.max(0, startY - this.scrollPadding);
         endY = Math.min(endY + this.scrollPadding, height);
         // clear comics that no longer need to be on-screen
-        this.destroyOffscreenNodes(startY, endY);
+        this.destroyOffscreenNodes(range, startY, endY);
         // loop through each of the comics that should be on-screen right now
-        var comicIndex = this.pixelToIndex(startY);
+        var comicIndex = this.data.pixelToIndex(range, startY);
         var existingSliceStart = this.sliceStart;
         var existingSliceEnd = this.sliceEnd;
         for (var y = this.data.getItemTop(range, comicIndex); y < endY;) {
@@ -260,7 +261,7 @@ function SetupSpeedreader(config) {
     function currentComic() {
         var comicY = -container.getBoundingClientRect().top;
         comicY += 80; // fudge a bit
-        return table.pixelToIndex(comicY);
+        return comicTable.pixelToIndex(comicTable.fullRange, comicY);
     }
     function updateHash() {
         if (window.history.replaceState) {

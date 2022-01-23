@@ -130,10 +130,6 @@ class ComicTable<T extends MetadataEntry> {
     return this.search(0, this.comics.length, "i", "last", index);
   }
 
-  public getForY(y: number): T {
-    return this.search(0, this.comics.length, "y", "lastY", y);
-  }
-
   private getAbsItemTop(index: number): number {
     const entry = this.getForIndex(index);
 
@@ -141,6 +137,28 @@ class ComicTable<T extends MetadataEntry> {
     const y = entry.y + entry.h * offset;
 
     return y;
+  }
+
+  private getForY(y: number): T {
+    return this.search(0, this.comics.length, "y", "lastY", y);
+  }
+
+  public pixelToIndex(range: ComicRange, y: number): number {
+    if (y <= 0) {
+      return range.from;
+    }
+
+    const fromY = this.getAbsItemTop(range.from);
+
+    const item = this.getForY(fromY + y);
+    if (item) {
+      const offset = fromY + y - item.y;
+      const indexOffset = Math.floor(offset / item.h);
+
+      return item.i + indexOffset;
+    } else {
+      return range.to;
+    }
   }
 
   public getItemTop(range: ComicRange, index: number): number {
@@ -179,28 +197,13 @@ class FlytableRenderer<T extends MetadataEntry> {
     return this.renderer(comicNum, this.data.getForIndex(comicNum));
   }
 
-  public pixelToIndex = function (
-    this: FlytableRenderer<T>,
-    y: number
-  ): number {
-    if (y <= 0) {
-      return this.data.fullRange.from;
-    }
-
-    const item = this.data.getForY(y);
-    if (item) {
-      const offset = y - item.y;
-      const indexOffset = Math.floor(offset / item.h);
-
-      return item.i + indexOffset;
-    } else {
-      return this.data.fullRange.to;
-    }
-  };
-
-  private destroyOffscreenNodes(startY: number, endY: number) {
-    const firstVisible = this.pixelToIndex(startY);
-    const lastVisible = this.pixelToIndex(endY);
+  private destroyOffscreenNodes(
+    range: ComicRange,
+    startY: number,
+    endY: number
+  ) {
+    const firstVisible = this.data.pixelToIndex(range, startY);
+    const lastVisible = this.data.pixelToIndex(range, endY);
 
     this.inUse = this.inUse.filter(({ comicIndex, html }) => {
       const keeping = comicIndex >= firstVisible && comicIndex <= lastVisible;
@@ -232,10 +235,10 @@ class FlytableRenderer<T extends MetadataEntry> {
     endY = Math.min(endY + this.scrollPadding, height);
 
     // clear comics that no longer need to be on-screen
-    this.destroyOffscreenNodes(startY, endY);
+    this.destroyOffscreenNodes(range, startY, endY);
 
     // loop through each of the comics that should be on-screen right now
-    let comicIndex = this.pixelToIndex(startY);
+    let comicIndex = this.data.pixelToIndex(range, startY);
     const existingSliceStart = this.sliceStart;
     const existingSliceEnd = this.sliceEnd;
 
@@ -345,7 +348,7 @@ function SetupSpeedreader<T extends MetadataEntry>(
     let comicY = -container.getBoundingClientRect().top;
     comicY += 80; // fudge a bit
 
-    return table.pixelToIndex(comicY);
+    return comicTable.pixelToIndex(comicTable.fullRange, comicY);
   }
 
   function updateHash() {
