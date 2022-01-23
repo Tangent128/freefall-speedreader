@@ -104,19 +104,20 @@ var ComicTable = /** @class */ (function () {
     ComicTable.prototype.getForY = function (y) {
         return this.search(0, this.comics.length, "y", "lastY", y);
     };
-    ComicTable.prototype.getItemTop = function (index) {
+    ComicTable.prototype.getAbsItemTop = function (index) {
         var entry = this.getForIndex(index);
         var offset = index - entry.i;
         var y = entry.y + entry.h * offset;
         return y;
     };
+    ComicTable.prototype.getItemTop = function (range, index) {
+        return this.getAbsItemTop(index) - this.getAbsItemTop(range.from);
+    };
     ComicTable.prototype.getItemHeight = function (index) {
         return this.getForIndex(index).h;
     };
     ComicTable.prototype.getRangeHeight = function (range) {
-        var topY = this.getForIndex(range.from).y;
-        var bottomY = this.getForIndex(range.to).lastY;
-        return bottomY - topY;
+        return this.getItemTop(range, range.to) + this.getItemHeight(range.to);
     };
     return ComicTable;
 }());
@@ -127,7 +128,7 @@ var FlytableRenderer = /** @class */ (function () {
     function FlytableRenderer(
     /** the HTML element to render into */
     container, 
-    /** comic date; heights + anything the renderer needs, like URLs or widths */
+    /** comic data; heights + anything the renderer needs, like URLs or widths */
     data, 
     /** comic render function */
     renderer, 
@@ -177,7 +178,7 @@ var FlytableRenderer = /** @class */ (function () {
         this.sliceStart = Math.min(index, this.sliceStart);
         this.sliceEnd = Math.max(this.sliceEnd, index);
     };
-    FlytableRenderer.prototype.renderSlice = function (startY, endY) {
+    FlytableRenderer.prototype.renderSlice = function (range, startY, endY) {
         // give the page-sized container that holds all the comics the correct size
         var height = this.data.getRangeHeight(this.data.fullRange);
         this.container.style.height = height + "px";
@@ -192,7 +193,7 @@ var FlytableRenderer = /** @class */ (function () {
         var comicIndex = this.pixelToIndex(startY);
         var existingSliceStart = this.sliceStart;
         var existingSliceEnd = this.sliceEnd;
-        for (var y = this.data.getItemTop(comicIndex); y < endY;) {
+        for (var y = this.data.getItemTop(range, comicIndex); y < endY;) {
             var h = this.data.getItemHeight(comicIndex);
             // if this comic isn't already onscreen, render it
             if (comicIndex < existingSliceStart || comicIndex > existingSliceEnd) {
@@ -214,7 +215,7 @@ var FlytableRenderer = /** @class */ (function () {
     };
     FlytableRenderer.prototype.render = function () {
         var offset = -this.container.getBoundingClientRect().top;
-        this.renderSlice(offset, offset + window.innerHeight);
+        this.renderSlice(this.data.fullRange, offset, offset + window.innerHeight);
     };
     return FlytableRenderer;
 }());
@@ -247,12 +248,12 @@ function SetupSpeedreader(config) {
         if (location.hash) {
             var comicNum = Number(location.hash.replace("#", ""));
             var resetY_1 = container.getBoundingClientRect().top;
-            var comicY_1 = comicTable.getItemTop(comicNum);
+            var comicY_1 = comicTable.getItemTop(comicTable.fullRange, comicNum);
             // this shouldn't be necessary, but seems delaying a tick before scrolling is a little more reliable
             window.setTimeout(function () {
                 window.scrollBy(0, resetY_1 + comicY_1);
                 // make sure the landing zone is rendered
-                table.renderSlice(-resetY_1, -resetY_1 + window.innerHeight);
+                table.renderSlice(comicTable.fullRange, -resetY_1, -resetY_1 + window.innerHeight);
             }, 0);
         }
     }

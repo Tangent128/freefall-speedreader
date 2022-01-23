@@ -134,7 +134,7 @@ class ComicTable<T extends MetadataEntry> {
     return this.search(0, this.comics.length, "y", "lastY", y);
   }
 
-  public getItemTop(index: number): number {
+  private getAbsItemTop(index: number): number {
     const entry = this.getForIndex(index);
 
     const offset = index - entry.i;
@@ -143,14 +143,16 @@ class ComicTable<T extends MetadataEntry> {
     return y;
   }
 
+  public getItemTop(range: ComicRange, index: number): number {
+    return this.getAbsItemTop(index) - this.getAbsItemTop(range.from);
+  }
+
   public getItemHeight(index: number): number {
     return this.getForIndex(index).h;
   }
 
   public getRangeHeight(range: ComicRange): number {
-    const topY = this.getForIndex(range.from).y;
-    const bottomY = this.getForIndex(range.to).lastY;
-    return bottomY - topY;
+    return this.getItemTop(range, range.to) + this.getItemHeight(range.to);
   }
 }
 
@@ -217,7 +219,7 @@ class FlytableRenderer<T extends MetadataEntry> {
     this.sliceEnd = Math.max(this.sliceEnd, index);
   }
 
-  public renderSlice(startY: number, endY: number) {
+  public renderSlice(range: ComicRange, startY: number, endY: number) {
     // give the page-sized container that holds all the comics the correct size
     const height = this.data.getRangeHeight(this.data.fullRange);
     this.container.style.height = height + "px";
@@ -237,7 +239,7 @@ class FlytableRenderer<T extends MetadataEntry> {
     const existingSliceStart = this.sliceStart;
     const existingSliceEnd = this.sliceEnd;
 
-    for (let y = this.data.getItemTop(comicIndex); y < endY; ) {
+    for (let y = this.data.getItemTop(range, comicIndex); y < endY; ) {
       const h = this.data.getItemHeight(comicIndex);
 
       // if this comic isn't already onscreen, render it
@@ -264,7 +266,7 @@ class FlytableRenderer<T extends MetadataEntry> {
 
   public render() {
     const offset = -this.container.getBoundingClientRect().top;
-    this.renderSlice(offset, offset + window.innerHeight);
+    this.renderSlice(this.data.fullRange, offset, offset + window.innerHeight);
   }
 }
 
@@ -323,14 +325,18 @@ function SetupSpeedreader<T extends MetadataEntry>(
     if (location.hash) {
       const comicNum = Number(location.hash.replace("#", ""));
       const resetY = container.getBoundingClientRect().top;
-      const comicY = comicTable.getItemTop(comicNum);
+      const comicY = comicTable.getItemTop(comicTable.fullRange, comicNum);
 
       // this shouldn't be necessary, but seems delaying a tick before scrolling is a little more reliable
       window.setTimeout(() => {
         window.scrollBy(0, resetY + comicY);
 
         // make sure the landing zone is rendered
-        table.renderSlice(-resetY, -resetY + window.innerHeight);
+        table.renderSlice(
+          comicTable.fullRange,
+          -resetY,
+          -resetY + window.innerHeight
+        );
       }, 0);
     }
   }
