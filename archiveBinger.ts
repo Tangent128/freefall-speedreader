@@ -326,12 +326,27 @@ function SetupSpeedreader<T extends MetadataEntry>(
     config.scrollPadding || 300
   );
 
+  /* Define view state that can be read/written to URL hash */
+  interface HashOptions {
+    comicNumber: number;
+    range?: ComicRange;
+  }
+
+  function ParseHash(hash: string): HashOptions {
+    return {
+      comicNumber: Number(hash.replace("#", "")),
+    };
+  }
+  function FormatHash(options: HashOptions): string {
+    return "#" + options.comicNumber;
+  }
+
   /* Setup Comic-Linking */
   function jumpToHash() {
     if (location.hash) {
-      const comicNum = Number(location.hash.replace("#", ""));
+      const options = ParseHash(location.hash);
       const resetY = container.getBoundingClientRect().top;
-      const comicY = comicTable.getItemTop(table.range, comicNum);
+      const comicY = comicTable.getItemTop(table.range, options.comicNumber);
 
       // this shouldn't be necessary, but seems delaying a tick before scrolling is a little more reliable
       window.setTimeout(() => {
@@ -353,7 +368,10 @@ function SetupSpeedreader<T extends MetadataEntry>(
   function updateHash() {
     if (window.history.replaceState) {
       const comicNum = currentComic();
-      window.history.replaceState(comicNum, "#" + comicNum, "#" + comicNum);
+      const hash = FormatHash({
+        comicNumber: comicNum,
+      });
+      window.history.replaceState(comicNum, hash, hash);
     }
   }
 
