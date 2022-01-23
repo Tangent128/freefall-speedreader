@@ -156,6 +156,7 @@ var FlytableRenderer = /** @class */ (function () {
         this.inUse = [];
         this.sliceStart = 1 / 0;
         this.sliceEnd = -1;
+        this.range = data.fullRange;
     }
     FlytableRenderer.prototype.getHtml = function (comicNum) {
         return this.renderer(comicNum, this.data.getForIndex(comicNum));
@@ -181,7 +182,7 @@ var FlytableRenderer = /** @class */ (function () {
     };
     FlytableRenderer.prototype.renderSlice = function (range, startY, endY) {
         // give the page-sized container that holds all the comics the correct size
-        var height = this.data.getRangeHeight(this.data.fullRange);
+        var height = this.data.getRangeHeight(range);
         this.container.style.height = height + "px";
         // make sure that the comic container is the reference point for comic locations
         this.container.style.position = "relative";
@@ -216,7 +217,7 @@ var FlytableRenderer = /** @class */ (function () {
     };
     FlytableRenderer.prototype.render = function () {
         var offset = -this.container.getBoundingClientRect().top;
-        this.renderSlice(this.data.fullRange, offset, offset + window.innerHeight);
+        this.renderSlice(this.range, offset, offset + window.innerHeight);
     };
     return FlytableRenderer;
 }());
@@ -249,19 +250,19 @@ function SetupSpeedreader(config) {
         if (location.hash) {
             var comicNum = Number(location.hash.replace("#", ""));
             var resetY_1 = container.getBoundingClientRect().top;
-            var comicY_1 = comicTable.getItemTop(comicTable.fullRange, comicNum);
+            var comicY_1 = comicTable.getItemTop(table.range, comicNum);
             // this shouldn't be necessary, but seems delaying a tick before scrolling is a little more reliable
             window.setTimeout(function () {
                 window.scrollBy(0, resetY_1 + comicY_1);
                 // make sure the landing zone is rendered
-                table.renderSlice(comicTable.fullRange, -resetY_1, -resetY_1 + window.innerHeight);
+                table.renderSlice(table.range, -resetY_1, -resetY_1 + window.innerHeight);
             }, 0);
         }
     }
     function currentComic() {
         var comicY = -container.getBoundingClientRect().top;
         comicY += 80; // fudge a bit
-        return comicTable.pixelToIndex(comicTable.fullRange, comicY);
+        return comicTable.pixelToIndex(table.range, comicY);
     }
     function updateHash() {
         if (window.history.replaceState) {

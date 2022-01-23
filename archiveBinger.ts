@@ -181,6 +181,7 @@ class FlytableRenderer<T extends MetadataEntry> {
   inUse: { html: HTMLElement; comicIndex: number }[] = [];
   sliceStart = 1 / 0;
   sliceEnd = -1;
+  range: ComicRange;
 
   constructor(
     /** the HTML element to render into */
@@ -191,7 +192,9 @@ class FlytableRenderer<T extends MetadataEntry> {
     private renderer: Renderer<T>,
     /** extra space on either side to render */
     private scrollPadding: number
-  ) {}
+  ) {
+    this.range = data.fullRange;
+  }
 
   private getHtml(comicNum: number): HTMLElement {
     return this.renderer(comicNum, this.data.getForIndex(comicNum));
@@ -224,7 +227,7 @@ class FlytableRenderer<T extends MetadataEntry> {
 
   public renderSlice(range: ComicRange, startY: number, endY: number) {
     // give the page-sized container that holds all the comics the correct size
-    const height = this.data.getRangeHeight(this.data.fullRange);
+    const height = this.data.getRangeHeight(range);
     this.container.style.height = height + "px";
 
     // make sure that the comic container is the reference point for comic locations
@@ -269,7 +272,7 @@ class FlytableRenderer<T extends MetadataEntry> {
 
   public render() {
     const offset = -this.container.getBoundingClientRect().top;
-    this.renderSlice(this.data.fullRange, offset, offset + window.innerHeight);
+    this.renderSlice(this.range, offset, offset + window.innerHeight);
   }
 }
 
@@ -328,18 +331,14 @@ function SetupSpeedreader<T extends MetadataEntry>(
     if (location.hash) {
       const comicNum = Number(location.hash.replace("#", ""));
       const resetY = container.getBoundingClientRect().top;
-      const comicY = comicTable.getItemTop(comicTable.fullRange, comicNum);
+      const comicY = comicTable.getItemTop(table.range, comicNum);
 
       // this shouldn't be necessary, but seems delaying a tick before scrolling is a little more reliable
       window.setTimeout(() => {
         window.scrollBy(0, resetY + comicY);
 
         // make sure the landing zone is rendered
-        table.renderSlice(
-          comicTable.fullRange,
-          -resetY,
-          -resetY + window.innerHeight
-        );
+        table.renderSlice(table.range, -resetY, -resetY + window.innerHeight);
       }, 0);
     }
   }
@@ -348,7 +347,7 @@ function SetupSpeedreader<T extends MetadataEntry>(
     let comicY = -container.getBoundingClientRect().top;
     comicY += 80; // fudge a bit
 
-    return comicTable.pixelToIndex(comicTable.fullRange, comicY);
+    return comicTable.pixelToIndex(table.range, comicY);
   }
 
   function updateHash() {
