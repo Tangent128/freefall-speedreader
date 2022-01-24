@@ -334,12 +334,22 @@ function SetupSpeedreader<T extends MetadataEntry>(
   let options: HashOptions = { comicNumber: comicTable.fullRange.from };
 
   function ParseHash(hash: string): HashOptions {
+    const comicNumberMatch = hash.match(/^#(\d+)/);
+    const rangeMatch = hash.match(/,range=(\d+)-(\d+)/);
+
     return {
-      comicNumber: Number(hash.replace("#", "")),
+      comicNumber: comicNumberMatch
+        ? Number(comicNumberMatch[1])
+        : comicTable.fullRange.from,
+      range: rangeMatch
+        ? { from: Number(rangeMatch[1]), to: Number(rangeMatch[2]) }
+        : undefined,
     };
   }
   function FormatHash(options: HashOptions): string {
-    return "#" + options.comicNumber;
+    return `#${options.comicNumber}${
+      options.range ? `,range=${options.range.from}-${options.range.to}` : ""
+    }`;
   }
 
   /* Setup Comic-Linking */
