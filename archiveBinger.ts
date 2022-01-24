@@ -331,6 +331,7 @@ function SetupSpeedreader<T extends MetadataEntry>(
     comicNumber: number;
     range?: ComicRange;
   }
+  let options: HashOptions = { comicNumber: comicTable.fullRange.from };
 
   function ParseHash(hash: string): HashOptions {
     return {
@@ -344,7 +345,9 @@ function SetupSpeedreader<T extends MetadataEntry>(
   /* Setup Comic-Linking */
   function jumpToHash() {
     if (location.hash) {
-      const options = ParseHash(location.hash);
+      options = ParseHash(location.hash);
+      table.range = options.range ?? comicTable.fullRange;
+
       const resetY = container.getBoundingClientRect().top;
       const comicY = comicTable.getItemTop(table.range, options.comicNumber);
 
@@ -370,6 +373,7 @@ function SetupSpeedreader<T extends MetadataEntry>(
       const comicNum = currentComic();
       const hash = FormatHash({
         comicNumber: comicNum,
+        range: options.range,
       });
       window.history.replaceState(comicNum, hash, hash);
     }

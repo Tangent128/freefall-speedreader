@@ -245,6 +245,7 @@ function SetupSpeedreader(config) {
     /* Setup Flytable */
     var container = SelectHtml(config.comicContainer);
     var table = new FlytableRenderer(container, comicTable, config.render, config.scrollPadding || 300);
+    var options = { comicNumber: comicTable.fullRange.from };
     function ParseHash(hash) {
         return {
             comicNumber: Number(hash.replace("#", "")),
@@ -255,8 +256,10 @@ function SetupSpeedreader(config) {
     }
     /* Setup Comic-Linking */
     function jumpToHash() {
+        var _a;
         if (location.hash) {
-            var options = ParseHash(location.hash);
+            options = ParseHash(location.hash);
+            table.range = (_a = options.range) !== null && _a !== void 0 ? _a : comicTable.fullRange;
             var resetY_1 = container.getBoundingClientRect().top;
             var comicY_1 = comicTable.getItemTop(table.range, options.comicNumber);
             // this shouldn't be necessary, but seems delaying a tick before scrolling is a little more reliable
@@ -277,6 +280,7 @@ function SetupSpeedreader(config) {
             var comicNum = currentComic();
             var hash = FormatHash({
                 comicNumber: comicNum,
+                range: options.range,
             });
             window.history.replaceState(comicNum, hash, hash);
         }
